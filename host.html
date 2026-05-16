@@ -1,0 +1,934 @@
+<!DOCTYPE html>
+
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>لوحة تحكم المضيف – بطولة XO العربية</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&family=Rajdhani:wght@500;700&display=swap');
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+–bg: #050818;
+–bg2: #080d20;
+–bg3: #0d1530;
+–card: #0f1a35;
+–border: #1a2d5a;
+–gold: #f0c040;
+–gold2: #ffd700;
+–cyan: #00e5ff;
+–purple: #9c27b0;
+–purple2: #ce93d8;
+–blue: #1565c0;
+–blue2: #42a5f5;
+–green: #00e676;
+–red: #ff1744;
+–text: #e8eaf6;
+–text2: #90a4ae;
+–glow-cyan: 0 0 20px rgba(0,229,255,0.4);
+–glow-gold: 0 0 20px rgba(240,192,64,0.5);
+–glow-purple: 0 0 20px rgba(156,39,176,0.4);
+}
+
+html, body { height: 100%; font-family: ‘Cairo’, sans-serif; background: var(–bg); color: var(–text); overflow-x: hidden; }
+
+/* Animated background */
+body::before {
+content: ‘’;
+position: fixed; inset: 0;
+background:
+radial-gradient(ellipse at 20% 50%, rgba(21,101,192,0.08) 0%, transparent 60%),
+radial-gradient(ellipse at 80% 20%, rgba(156,39,176,0.08) 0%, transparent 60%),
+radial-gradient(ellipse at 50% 80%, rgba(0,229,255,0.04) 0%, transparent 60%);
+pointer-events: none; z-index: 0;
+}
+
+/* Grid overlay */
+body::after {
+content: ‘’;
+position: fixed; inset: 0;
+background-image:
+linear-gradient(rgba(26,45,90,0.3) 1px, transparent 1px),
+linear-gradient(90deg, rgba(26,45,90,0.3) 1px, transparent 1px);
+background-size: 40px 40px;
+pointer-events: none; z-index: 0;
+}
+
+- { position: relative; z-index: 1; }
+
+/* ─── SETUP SCREEN ─── */
+#setup-screen {
+min-height: 100vh;
+display: flex; flex-direction: column; align-items: center; justify-content: center;
+padding: 2rem;
+}
+
+.logo {
+font-family: ‘Rajdhani’, sans-serif;
+font-size: clamp(2rem, 5vw, 3.5rem);
+font-weight: 700;
+background: linear-gradient(135deg, var(–gold), var(–cyan), var(–purple2));
+-webkit-background-clip: text; -webkit-text-fill-color: transparent;
+text-align: center; margin-bottom: 0.5rem;
+filter: drop-shadow(0 0 20px rgba(240,192,64,0.3));
+letter-spacing: 2px;
+}
+.logo-sub { color: var(–text2); font-size: 1rem; text-align: center; margin-bottom: 3rem; }
+
+.setup-card {
+background: var(–card);
+border: 1px solid var(–border);
+border-radius: 20px;
+padding: 2.5rem;
+width: 100%; max-width: 480px;
+box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+}
+
+.setup-card h2 { font-size: 1.4rem; color: var(–cyan); margin-bottom: 1.5rem; text-align: center; }
+
+.input-group { margin-bottom: 1.2rem; }
+.input-group label { display: block; color: var(–text2); font-size: 0.9rem; margin-bottom: 0.4rem; }
+.input-group input {
+width: 100%; padding: 0.8rem 1rem;
+background: var(–bg3); border: 1px solid var(–border);
+border-radius: 10px; color: var(–text); font-family: ‘Cairo’, sans-serif;
+font-size: 1rem; outline: none; direction: rtl;
+transition: border-color 0.3s, box-shadow 0.3s;
+}
+.input-group input:focus { border-color: var(–cyan); box-shadow: 0 0 15px rgba(0,229,255,0.2); }
+
+.btn {
+padding: 0.9rem 2rem; border: none; border-radius: 12px;
+font-family: ‘Cairo’, sans-serif; font-size: 1.1rem; font-weight: 700;
+cursor: pointer; transition: all 0.3s; width: 100%;
+}
+.btn-gold {
+background: linear-gradient(135deg, #f0c040, #ffd700);
+color: #000;
+box-shadow: 0 4px 20px rgba(240,192,64,0.4);
+}
+.btn-gold:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(240,192,64,0.6); }
+.btn-cyan {
+background: linear-gradient(135deg, #006064, #00e5ff);
+color: #000;
+box-shadow: 0 4px 20px rgba(0,229,255,0.3);
+}
+.btn-cyan:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(0,229,255,0.5); }
+.btn-purple {
+background: linear-gradient(135deg, #4a148c, #ce93d8);
+color: #fff;
+box-shadow: 0 4px 20px rgba(156,39,176,0.4);
+}
+.btn-purple:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(156,39,176,0.5); }
+.btn-red { background: linear-gradient(135deg, #b71c1c, #ff5252); color: #fff; }
+.btn-red:hover { transform: translateY(-2px); }
+.btn-sm { padding: 0.5rem 1rem; font-size: 0.85rem; width: auto; border-radius: 8px; }
+
+/* ─── MAIN DASHBOARD ─── */
+#dashboard { display: none; min-height: 100vh; }
+
+.top-bar {
+background: rgba(8,13,32,0.95);
+border-bottom: 1px solid var(–border);
+padding: 0.8rem 1.5rem;
+display: flex; align-items: center; justify-content: space-between;
+backdrop-filter: blur(10px);
+position: sticky; top: 0; z-index: 100;
+}
+
+.top-bar-logo { font-family: ‘Rajdhani’, sans-serif; font-size: 1.4rem; font-weight: 700; color: var(–gold); letter-spacing: 2px; }
+.top-bar-code {
+background: var(–bg3); border: 1px solid var(–gold);
+border-radius: 8px; padding: 0.3rem 1rem;
+font-size: 1.5rem; font-weight: 900; color: var(–gold);
+letter-spacing: 4px; cursor: pointer;
+box-shadow: var(–glow-gold);
+font-family: ‘Rajdhani’, sans-serif;
+}
+.top-bar-status { color: var(–text2); font-size: 0.9rem; display: flex; align-items: center; gap: 0.5rem; }
+.status-dot { width: 8px; height: 8px; border-radius: 50%; background: var(–green); animation: pulse 1.5s infinite; }
+@keyframes pulse { 0%,100%{opacity:1;} 50%{opacity:0.3;} }
+
+.dashboard-grid {
+display: grid;
+grid-template-columns: 320px 1fr 300px;
+grid-template-rows: auto 1fr;
+gap: 1rem; padding: 1rem;
+min-height: calc(100vh - 60px);
+}
+
+/* Panel */
+.panel {
+background: var(–card);
+border: 1px solid var(–border);
+border-radius: 16px;
+overflow: hidden;
+display: flex; flex-direction: column;
+}
+.panel-header {
+padding: 1rem 1.2rem;
+background: var(–bg3);
+border-bottom: 1px solid var(–border);
+display: flex; align-items: center; justify-content: space-between;
+font-weight: 700; font-size: 1rem;
+}
+.panel-header .icon { font-size: 1.2rem; margin-left: 0.5rem; }
+.panel-body { padding: 1rem; flex: 1; overflow-y: auto; }
+.panel-body::-webkit-scrollbar { width: 4px; }
+.panel-body::-webkit-scrollbar-thumb { background: var(–border); border-radius: 2px; }
+
+/* ─── PLAYERS PANEL ─── */
+.player-item {
+display: flex; align-items: center; gap: 0.7rem;
+padding: 0.7rem; border-radius: 10px;
+border: 1px solid var(–border); margin-bottom: 0.5rem;
+transition: all 0.3s; background: var(–bg3);
+}
+.player-item:hover { border-color: var(–cyan); }
+.player-avatar {
+width: 36px; height: 36px; border-radius: 50%;
+background: linear-gradient(135deg, var(–blue), var(–purple));
+display: flex; align-items: center; justify-content: center;
+font-weight: 700; font-size: 0.9rem; flex-shrink: 0;
+}
+.player-name { font-weight: 600; flex: 1; }
+.player-status { display: flex; align-items: center; gap: 0.3rem; font-size: 0.75rem; }
+.dot { width: 6px; height: 6px; border-radius: 50%; }
+.dot-green { background: var(–green); }
+.dot-red { background: var(–red); }
+.qualify-btn {
+padding: 0.3rem 0.7rem; background: var(–purple); color: #fff;
+border: none; border-radius: 6px; cursor: pointer;
+font-family: ‘Cairo’, sans-serif; font-size: 0.75rem;
+transition: all 0.2s;
+}
+.qualify-btn:hover { background: var(–purple2); color: #000; }
+
+/* ─── LOBBY CONTROLS ─── */
+.invite-box {
+background: var(–bg3); border: 1px solid var(–border);
+border-radius: 12px; padding: 1rem; margin-bottom: 1rem;
+}
+.invite-label { color: var(–text2); font-size: 0.8rem; margin-bottom: 0.4rem; }
+.invite-row { display: flex; gap: 0.5rem; align-items: center; }
+.invite-code {
+flex: 1; background: var(–bg); border: 1px solid var(–gold);
+border-radius: 8px; padding: 0.5rem 0.8rem;
+color: var(–gold); font-family: ‘Rajdhani’, sans-serif;
+font-size: 1.3rem; font-weight: 700; letter-spacing: 3px;
+text-align: center;
+}
+.copy-btn {
+padding: 0.5rem 0.8rem; background: var(–gold); color: #000;
+border: none; border-radius: 8px; cursor: pointer;
+font-size: 0.85rem; font-weight: 700; white-space: nowrap;
+transition: all 0.2s;
+}
+.copy-btn:hover { background: var(–gold2); }
+
+/* ─── BRACKET ─── */
+#bracket-container {
+overflow-x: auto; overflow-y: auto;
+flex: 1; padding: 1rem;
+}
+.bracket-wrapper {
+display: flex; gap: 2rem; align-items: flex-start;
+min-width: max-content; padding: 1rem;
+}
+.bracket-round { display: flex; flex-direction: column; gap: 1rem; }
+.round-title {
+font-size: 0.8rem; font-weight: 700; color: var(–gold);
+text-align: center; padding: 0.4rem;
+border-bottom: 1px solid var(–gold);
+margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 1px;
+}
+
+.bracket-match {
+background: var(–bg3); border: 1px solid var(–border);
+border-radius: 12px; overflow: hidden; cursor: pointer;
+transition: all 0.3s; min-width: 180px;
+box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+}
+.bracket-match:hover { border-color: var(–cyan); box-shadow: 0 4px 25px rgba(0,229,255,0.2); transform: translateY(-2px); }
+.bracket-match.active { border-color: var(–cyan); box-shadow: var(–glow-cyan); animation: glow-pulse 2s infinite; }
+.bracket-match.finished { border-color: var(–green); opacity: 0.8; }
+.bracket-match.pending { opacity: 0.6; }
+
+@keyframes glow-pulse {
+0%,100%{ box-shadow: 0 0 15px rgba(0,229,255,0.3); }
+50%{ box-shadow: 0 0 30px rgba(0,229,255,0.6); }
+}
+
+.bm-player {
+padding: 0.5rem 0.8rem; display: flex; align-items: center; gap: 0.5rem;
+font-size: 0.85rem; font-weight: 600;
+border-bottom: 1px solid var(–border);
+}
+.bm-player:last-child { border-bottom: none; }
+.bm-player.winner { background: rgba(0,230,118,0.1); color: var(–green); }
+.bm-player.loser { opacity: 0.5; }
+.bm-symbol { font-family: ‘Rajdhani’, sans-serif; font-weight: 700; font-size: 1rem; margin-right: auto; }
+.bm-symbol.x { color: var(–cyan); }
+.bm-symbol.o { color: var(–gold); }
+.trophy { margin-right: auto; }
+
+/* ─── MATCH VIEWER ─── */
+#match-viewer {
+background: var(–card); border: 1px solid var(–cyan);
+border-radius: 16px; padding: 1.2rem;
+box-shadow: var(–glow-cyan);
+display: none; grid-column: 2; grid-row: 1 / 3;
+}
+#match-viewer.visible { display: block; }
+
+.mv-header {
+display: flex; align-items: center; justify-content: space-between;
+margin-bottom: 1rem; padding-bottom: 0.8rem; border-bottom: 1px solid var(–border);
+}
+.mv-title { font-size: 1.1rem; font-weight: 700; color: var(–cyan); }
+.mv-close {
+background: var(–bg3); border: 1px solid var(–border);
+color: var(–text2); width: 30px; height: 30px; border-radius: 50%;
+cursor: pointer; font-size: 1rem; display: flex; align-items: center; justify-content: center;
+transition: all 0.2s;
+}
+.mv-close:hover { background: var(–red); color: #fff; border-color: var(–red); }
+
+.mv-players {
+display: flex; align-items: center; justify-content: space-around;
+margin-bottom: 1rem;
+}
+.mv-player {
+text-align: center; padding: 0.8rem 1.5rem;
+border-radius: 12px; border: 2px solid var(–border);
+transition: all 0.3s; min-width: 120px;
+}
+.mv-player.active-turn { border-color: var(–cyan); box-shadow: var(–glow-cyan); background: rgba(0,229,255,0.05); }
+.mv-player-name { font-weight: 700; font-size: 1rem; }
+.mv-player-symbol { font-family: ‘Rajdhani’, sans-serif; font-size: 2rem; font-weight: 700; }
+.mv-player-symbol.x { color: var(–cyan); }
+.mv-player-symbol.o { color: var(–gold); }
+.mv-vs { color: var(–text2); font-size: 1.2rem; font-weight: 700; }
+
+/* XO Board */
+.xo-board {
+display: grid; grid-template-columns: repeat(3, 1fr);
+gap: 8px; max-width: 240px; margin: 0 auto 1.5rem;
+}
+.xo-cell {
+aspect-ratio: 1;
+background: var(–bg3); border: 2px solid var(–border);
+border-radius: 12px; display: flex; align-items: center; justify-content: center;
+font-family: ‘Rajdhani’, sans-serif; font-size: 2.5rem; font-weight: 700;
+cursor: default; transition: all 0.3s;
+position: relative; overflow: hidden;
+}
+.xo-cell.x-cell { color: var(–cyan); border-color: rgba(0,229,255,0.4); background: rgba(0,229,255,0.05); }
+.xo-cell.o-cell { color: var(–gold); border-color: rgba(240,192,64,0.4); background: rgba(240,192,64,0.05); }
+.xo-cell.win-cell { animation: win-glow 1s ease-in-out infinite alternate; }
+@keyframes win-glow {
+from { box-shadow: inset 0 0 20px rgba(0,230,118,0.3); border-color: var(–green); }
+to { box-shadow: inset 0 0 40px rgba(0,230,118,0.6); border-color: var(–green); }
+}
+.xo-cell-appear { animation: cell-pop 0.3s cubic-bezier(0.34,1.56,0.64,1); }
+@keyframes cell-pop { from{transform:scale(0);opacity:0;} to{transform:scale(1);opacity:1;} }
+
+/* Question area */
+.mv-question {
+background: var(–bg3); border: 1px solid var(–purple);
+border-radius: 12px; padding: 1rem;
+box-shadow: var(–glow-purple); margin-bottom: 1rem;
+}
+.mv-q-label { color: var(–purple2); font-size: 0.8rem; margin-bottom: 0.5rem; }
+.mv-q-text { font-size: 1rem; font-weight: 600; color: var(–text); line-height: 1.6; margin-bottom: 0.8rem; }
+.mv-options { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; }
+.mv-option {
+background: var(–bg); border: 1px solid var(–border);
+border-radius: 8px; padding: 0.5rem 0.7rem;
+font-size: 0.85rem; color: var(–text2); direction: rtl;
+display: flex; align-items: center; gap: 0.5rem;
+}
+.mv-option-label { color: var(–cyan); font-family: ‘Rajdhani’, sans-serif; font-weight: 700; }
+
+/* Match controls */
+.match-controls { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 1rem; }
+
+/* ─── EVENT FEED ─── */
+#event-feed { display: flex; flex-direction: column; gap: 0; }
+.event-item {
+padding: 0.6rem 0.8rem;
+border-bottom: 1px solid rgba(26,45,90,0.5);
+font-size: 0.85rem; line-height: 1.4;
+animation: slide-in 0.4s ease;
+display: flex; align-items: flex-start; gap: 0.5rem;
+}
+@keyframes slide-in { from{opacity:0;transform:translateX(20px);} to{opacity:1;transform:translateX(0);} }
+.event-item.info { color: var(–text2); }
+.event-item.correct { color: var(–green); }
+.event-item.wrong { color: var(–red); }
+.event-item.move { color: var(–blue2); }
+.event-item.qualify { color: var(–gold); }
+.event-item.round { color: var(–cyan); font-weight: 700; }
+.event-item.join { color: var(–purple2); }
+.event-item.start { color: var(–gold); font-weight: 700; }
+.event-item.draw { color: #ff9800; }
+.event-item.champion { color: var(–gold2); font-weight: 900; font-size: 1rem; }
+.event-item.leave { color: var(–text2); opacity: 0.7; }
+.event-time { color: var(–text2); font-size: 0.7rem; white-space: nowrap; opacity: 0.7; }
+
+/* ─── TOURNAMENT STATUS BAR ─── */
+.status-bar {
+display: flex; gap: 1rem; padding: 0.8rem 1rem;
+background: var(–bg3); border-bottom: 1px solid var(–border);
+}
+.stat-box {
+background: var(–card); border: 1px solid var(–border);
+border-radius: 10px; padding: 0.6rem 1rem;
+text-align: center; flex: 1;
+}
+.stat-value { font-size: 1.5rem; font-weight: 900; color: var(–cyan); font-family: ‘Rajdhani’, sans-serif; }
+.stat-label { font-size: 0.75rem; color: var(–text2); }
+
+/* Notifications */
+.notif {
+position: fixed; top: 80px; left: 50%; transform: translateX(-50%);
+background: var(–card); border: 1px solid var(–cyan);
+border-radius: 12px; padding: 1rem 2rem;
+color: var(–cyan); font-weight: 700;
+box-shadow: var(–glow-cyan); z-index: 1000;
+animation: notif-in 0.4s ease;
+}
+@keyframes notif-in { from{opacity:0;transform:translateX(-50%) translateY(-20px);} to{opacity:1;transform:translateX(-50%) translateY(0);} }
+
+/* Section label */
+.section-label {
+display: flex; align-items: center; gap: 0.5rem;
+font-size: 0.8rem; color: var(–text2); margin-bottom: 0.8rem;
+padding-bottom: 0.5rem; border-bottom: 1px solid var(–border);
+}
+.section-label::before { content: ‘’; flex: 1; height: 1px; background: var(–border); }
+
+/* Round info */
+.round-badge {
+background: linear-gradient(135deg, var(–blue), var(–purple));
+border-radius: 8px; padding: 0.3rem 0.8rem;
+font-size: 0.85rem; font-weight: 700; color: #fff; display: inline-block;
+}
+
+/* Responsive */
+@media (max-width: 1100px) {
+.dashboard-grid { grid-template-columns: 280px 1fr; }
+}
+@media (max-width: 768px) {
+.dashboard-grid { grid-template-columns: 1fr; }
+.top-bar-logo { font-size: 1rem; }
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(–bg); }
+::-webkit-scrollbar-thumb { background: var(–border); border-radius: 3px; }
+
+/* Match ended overlay */
+.match-result-overlay {
+background: rgba(0,230,118,0.1); border: 1px solid var(–green);
+border-radius: 12px; padding: 1rem; text-align: center;
+margin-bottom: 1rem; display: none;
+}
+.match-result-overlay.visible { display: block; animation: slide-in 0.5s ease; }
+.match-result-overlay .winner-name { font-size: 1.5rem; font-weight: 900; color: var(–green); }
+</style>
+
+</head>
+<body>
+
+<!-- ─── SETUP SCREEN ─── -->
+
+<div id="setup-screen">
+  <div class="logo">🏆 XO ARABIC TOURNAMENT</div>
+  <div class="logo-sub">منصة بطولة XO التعليمية العربية</div>
+  <div class="setup-card">
+    <h2>إنشاء بطولة جديدة</h2>
+    <div class="input-group">
+      <label>اسم المضيف</label>
+      <input type="text" id="host-name" placeholder="أدخل اسمك" value="المضيف">
+    </div>
+    <button class="btn btn-gold" onclick="createTournament()">🎮 إنشاء البطولة</button>
+  </div>
+</div>
+
+<!-- ─── MAIN DASHBOARD ─── -->
+
+<div id="dashboard">
+  <div class="top-bar">
+    <div class="top-bar-logo">⚡ XO TOURNAMENT HOST</div>
+    <div class="top-bar-code" id="code-display" onclick="copyCode()" title="انقر للنسخ">------</div>
+    <div class="top-bar-status">
+      <span class="status-dot"></span>
+      <span id="status-text">جاهز</span>
+    </div>
+  </div>
+
+  <div class="status-bar">
+    <div class="stat-box">
+      <div class="stat-value" id="stat-players">0</div>
+      <div class="stat-label">اللاعبون</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-value" id="stat-round">-</div>
+      <div class="stat-label">الجولة</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-value" id="stat-matches">0</div>
+      <div class="stat-label">المباريات</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-value" id="stat-status">🟡</div>
+      <div class="stat-label">الحالة</div>
+    </div>
+  </div>
+
+  <div class="dashboard-grid">
+
+```
+<!-- LEFT: Players + Lobby -->
+<div style="display:flex;flex-direction:column;gap:1rem;">
+
+  <!-- Lobby controls -->
+  <div class="panel" id="lobby-panel">
+    <div class="panel-header"><span class="icon">🎯</span> التحكم في البطولة</div>
+    <div class="panel-body">
+      <div class="invite-box">
+        <div class="invite-label">رمز الدعوة</div>
+        <div class="invite-row">
+          <div class="invite-code" id="invite-code">------</div>
+          <button class="copy-btn" onclick="copyCode()">📋 نسخ</button>
+        </div>
+      </div>
+      <div class="invite-box" style="margin-bottom:1rem;">
+        <div class="invite-label">رابط الانضمام</div>
+        <div class="invite-row">
+          <input id="invite-link" style="flex:1;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:0.5rem;color:var(--text2);font-size:0.8rem;direction:ltr;" readonly>
+          <button class="copy-btn" onclick="copyLink()">🔗 نسخ</button>
+        </div>
+      </div>
+      <button class="btn btn-gold" id="start-btn" onclick="startTournament()" style="margin-bottom:0.5rem;">🚀 بدء البطولة</button>
+      <div style="color:var(--text2);font-size:0.8rem;text-align:center;">يجب أن يكون هناك لاعبان على الأقل</div>
+    </div>
+  </div>
+
+  <!-- Players list -->
+  <div class="panel" style="flex:1;">
+    <div class="panel-header">
+      <span><span class="icon">👥</span> اللاعبون</span>
+      <span id="player-count" style="color:var(--cyan);font-family:'Rajdhani',sans-serif;font-size:1.2rem;">0</span>
+    </div>
+    <div class="panel-body" id="players-list">
+      <div style="color:var(--text2);text-align:center;padding:2rem;font-size:0.9rem;">في انتظار انضمام اللاعبين...</div>
+    </div>
+  </div>
+</div>
+
+<!-- CENTER: Bracket + Match Viewer -->
+<div style="display:flex;flex-direction:column;gap:1rem;">
+
+  <!-- Match viewer (hidden by default) -->
+  <div id="match-viewer">
+    <div class="mv-header">
+      <div class="mv-title">🎮 مشاهدة المباراة المباشرة</div>
+      <button class="mv-close" onclick="closeMatchViewer()">✕</button>
+    </div>
+
+    <div class="match-result-overlay" id="match-result-overlay">
+      <div style="font-size:0.9rem;color:var(--text2);margin-bottom:0.3rem;">الفائز</div>
+      <div class="winner-name" id="winner-display">-</div>
+    </div>
+
+    <div class="mv-players">
+      <div class="mv-player" id="mv-p1">
+        <div class="mv-player-symbol x">X</div>
+        <div class="mv-player-name" id="mv-p1-name">-</div>
+      </div>
+      <div class="mv-vs">VS</div>
+      <div class="mv-player" id="mv-p2">
+        <div class="mv-player-symbol o">O</div>
+        <div class="mv-player-name" id="mv-p2-name">-</div>
+      </div>
+    </div>
+
+    <div class="xo-board" id="mv-board">
+      <!-- cells generated by JS -->
+    </div>
+
+    <div class="mv-question" id="mv-question-box">
+      <div class="mv-q-label">📚 السؤال الحالي</div>
+      <div class="mv-q-text" id="mv-q-text">-</div>
+      <div class="mv-options" id="mv-q-options"></div>
+    </div>
+
+    <div class="match-controls">
+      <button class="btn btn-purple btn-sm" id="mv-restart-btn" onclick="hostRestartMatch()">🔄 إعادة المباراة</button>
+      <button class="btn btn-red btn-sm" id="mv-qualify-p1" onclick="hostQualifyPlayer(1)">👑 تأهيل X</button>
+      <button class="btn btn-red btn-sm" id="mv-qualify-p2" onclick="hostQualifyPlayer(2)">👑 تأهيل O</button>
+    </div>
+  </div>
+
+  <!-- Bracket -->
+  <div class="panel" style="flex:1;">
+    <div class="panel-header"><span class="icon">🏆</span> شجرة البطولة <span class="round-badge" id="round-badge">-</span></div>
+    <div id="bracket-container">
+      <div style="color:var(--text2);text-align:center;padding:3rem;font-size:0.9rem;">ستظهر شجرة البطولة عند بدء المباريات</div>
+    </div>
+  </div>
+</div>
+
+<!-- RIGHT: Event Feed -->
+<div class="panel" style="min-height:300px;">
+  <div class="panel-header"><span class="icon">⚡</span> الأحداث المباشرة</div>
+  <div class="panel-body" id="event-feed-container" style="padding:0;">
+    <div id="event-feed"></div>
+  </div>
+</div>
+```
+
+  </div><!-- /dashboard-grid -->
+</div><!-- /dashboard -->
+
+<script src="/socket.io/socket.io.js"></script>
+
+<script>
+const socket = io();
+let currentCode = '';
+let currentMatchId = null;
+let viewingMatch = null;
+let tournamentData = null;
+
+// ─── Audio ───────────────────────────────────────────────────────────────────
+const AudioCtx = window.AudioContext || window.webkitAudioContext;
+let ctx;
+function initAudio() {
+  if (!ctx) ctx = new AudioCtx();
+}
+function playBeep(freq=440, type='sine', duration=0.2, vol=0.3) {
+  try {
+    if (!ctx) return;
+    const o = ctx.createOscillator();
+    const g = ctx.createGain();
+    o.connect(g); g.connect(ctx.destination);
+    o.type = type; o.frequency.value = freq;
+    g.gain.setValueAtTime(vol, ctx.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duration);
+    o.start(); o.stop(ctx.currentTime + duration);
+  } catch(e){}
+}
+
+document.addEventListener('click', initAudio, { once: true });
+
+// ─── Create Tournament ────────────────────────────────────────────────────────
+function createTournament() {
+  const name = document.getElementById('host-name').value.trim() || 'المضيف';
+  socket.emit('create-tournament', { hostName: name });
+}
+
+socket.on('tournament-created', ({ code, inviteLink }) => {
+  currentCode = code;
+  document.getElementById('setup-screen').style.display = 'none';
+  document.getElementById('dashboard').style.display = 'block';
+  document.getElementById('code-display').textContent = code;
+  document.getElementById('invite-code').textContent = code;
+  document.getElementById('invite-link').value = window.location.origin + inviteLink;
+  initBoardCells();
+  playBeep(880, 'sine', 0.4, 0.3);
+  showNotif('تم إنشاء البطولة! رمز الدعوة: ' + code);
+});
+
+socket.on('tournament-update', (t) => {
+  tournamentData = t;
+  updateDashboard(t);
+});
+
+socket.on('event-feed-update', (ev) => {
+  appendEvent(ev);
+  if (ev.type === 'correct' || ev.type === 'qualify') playBeep(660, 'sine', 0.2);
+  if (ev.type === 'wrong') playBeep(220, 'sawtooth', 0.2);
+  if (ev.type === 'round' || ev.type === 'start') playBeep(880, 'sine', 0.5);
+});
+
+socket.on('match-update', (m) => {
+  if (viewingMatch && m.id === viewingMatch) {
+    updateMatchViewer(m);
+  }
+});
+
+socket.on('match-viewer', ({ matchId, match }) => {
+  // Auto-open viewer for first match
+});
+
+socket.on('match-ended', ({ winner, line }) => {
+  if (viewingMatch) {
+    highlightWinLine(line);
+    document.getElementById('match-result-overlay').classList.add('visible');
+    document.getElementById('winner-display').textContent = winner?.name || 'تعادل';
+    playBeep(1047, 'sine', 0.8, 0.4);
+  }
+});
+
+// ─── Dashboard update ─────────────────────────────────────────────────────────
+function updateDashboard(t) {
+  document.getElementById('stat-players').textContent = t.players.length;
+  document.getElementById('stat-round').textContent = t.rounds.length > 0 ? (t.currentRound + 1) : '-';
+  const activeMatches = t.rounds.reduce((a, r) => a + r.matches.filter(m => m.status === 'active').length, 0);
+  document.getElementById('stat-matches').textContent = activeMatches;
+  const statusMap = { lobby: '🟡', active: '🟢', finished: '🏆' };
+  document.getElementById('stat-status').textContent = statusMap[t.status] || '🟡';
+
+  const roundName = t.rounds[t.currentRound]?.name || '-';
+  document.getElementById('round-badge').textContent = roundName;
+  document.getElementById('status-text').textContent = t.status === 'lobby' ? 'اللوبي' : t.status === 'active' ? 'جارية' : 'منتهية';
+
+  updatePlayersList(t.players);
+  updateBracket(t);
+  document.getElementById('player-count').textContent = t.players.length;
+}
+
+function updatePlayersList(players) {
+  const el = document.getElementById('players-list');
+  if (!players.length) {
+    el.innerHTML = '<div style="color:var(--text2);text-align:center;padding:2rem;font-size:0.9rem;">في انتظار انضمام اللاعبين...</div>';
+    return;
+  }
+  el.innerHTML = players.map(p => `
+    <div class="player-item">
+      <div class="player-avatar">${p.name.charAt(0)}</div>
+      <div style="flex:1;">
+        <div class="player-name">${p.name}</div>
+        <div class="player-status">
+          <span class="dot ${p.online ? 'dot-green' : 'dot-red'}"></span>
+          <span style="color:var(--text2);">${p.online ? 'متصل' : 'غير متصل'}</span>
+        </div>
+      </div>
+      <button class="qualify-btn" onclick="manualQualify('${p.id}')">تأهيل</button>
+    </div>
+  `).join('');
+}
+
+function updateBracket(t) {
+  if (!t.rounds.length) return;
+  const container = document.getElementById('bracket-container');
+  const wrapper = document.createElement('div');
+  wrapper.className = 'bracket-wrapper';
+
+  t.rounds.forEach(round => {
+    const roundEl = document.createElement('div');
+    roundEl.className = 'bracket-round';
+    
+    const titleEl = document.createElement('div');
+    titleEl.className = 'round-title';
+    titleEl.textContent = round.name;
+    roundEl.appendChild(titleEl);
+
+    // Space matches vertically for bracket feel
+    const matchCount = round.matches.length;
+    const maxMatches = t.rounds[0]?.matches.length || matchCount;
+    const spacer = Math.floor((maxMatches / matchCount - 1) * 80);
+
+    round.matches.forEach((bm, i) => {
+      if (i > 0) {
+        const sp = document.createElement('div');
+        sp.style.height = spacer + 'px';
+        roundEl.appendChild(sp);
+      }
+
+      const matchEl = document.createElement('div');
+      matchEl.className = `bracket-match ${bm.status}`;
+      matchEl.onclick = () => openMatchViewer(bm.id, bm);
+
+      const p1name = bm.player1?.name || '؟';
+      const p2name = bm.player2?.name || '؟';
+      const p1win = bm.winner?.id === bm.player1?.id;
+      const p2win = bm.winner?.id === bm.player2?.id;
+
+      matchEl.innerHTML = `
+        <div class="bm-player ${p1win ? 'winner' : (bm.status === 'finished' && !p1win ? 'loser' : '')}">
+          <span class="bm-symbol x">X</span>
+          ${p1name}
+          ${p1win ? '<span class="trophy">🏆</span>' : ''}
+        </div>
+        <div class="bm-player ${p2win ? 'winner' : (bm.status === 'finished' && !p2win ? 'loser' : '')}">
+          <span class="bm-symbol o">O</span>
+          ${p2name}
+          ${p2win ? '<span class="trophy">🏆</span>' : ''}
+        </div>
+      `;
+      roundEl.appendChild(matchEl);
+    });
+
+    wrapper.appendChild(roundEl);
+  });
+
+  container.innerHTML = '';
+  container.appendChild(wrapper);
+}
+
+// ─── Match Viewer ─────────────────────────────────────────────────────────────
+function initBoardCells() {
+  const board = document.getElementById('mv-board');
+  board.innerHTML = '';
+  for (let i = 0; i < 9; i++) {
+    const cell = document.createElement('div');
+    cell.className = 'xo-cell';
+    cell.id = 'mv-cell-' + i;
+    board.appendChild(cell);
+  }
+}
+
+function openMatchViewer(matchId, bm) {
+  if (!matchId) return;
+  const viewer = document.getElementById('match-viewer');
+  viewer.classList.add('visible');
+  viewingMatch = matchId;
+  currentMatchId = matchId;
+
+  // Join match room
+  socket.emit('watch-match', { matchId });
+
+  // Set player names from bracket
+  if (bm) {
+    document.getElementById('mv-p1-name').textContent = bm.player1?.name || '-';
+    document.getElementById('mv-p2-name').textContent = bm.player2?.name || '-';
+    document.getElementById('mv-restart-btn').dataset.matchId = matchId;
+    document.getElementById('mv-qualify-p1').dataset.playerId = bm.player1?.id || '';
+    document.getElementById('mv-qualify-p2').dataset.playerId = bm.player2?.id || '';
+  }
+
+  // Reset overlay
+  document.getElementById('match-result-overlay').classList.remove('visible');
+  clearBoard();
+}
+
+function closeMatchViewer() {
+  document.getElementById('match-viewer').classList.remove('visible');
+  viewingMatch = null;
+}
+
+function updateMatchViewer(m) {
+  document.getElementById('mv-p1-name').textContent = m.player1?.name || '-';
+  document.getElementById('mv-p2-name').textContent = m.player2?.name || '-';
+
+  // Active turn
+  document.getElementById('mv-p1').classList.toggle('active-turn', m.currentTurn === m.player1?.id);
+  document.getElementById('mv-p2').classList.toggle('active-turn', m.currentTurn === m.player2?.id);
+
+  // Board
+  m.board.forEach((val, i) => {
+    const cell = document.getElementById('mv-cell-' + i);
+    if (!cell) return;
+    if (val && !cell.textContent) {
+      cell.textContent = val;
+      cell.className = 'xo-cell ' + (val === 'X' ? 'x-cell' : 'o-cell') + ' xo-cell-appear';
+      setTimeout(() => cell.classList.remove('xo-cell-appear'), 400);
+    }
+  });
+
+  // Question
+  if (m.currentQuestion) {
+    document.getElementById('mv-q-text').textContent = m.currentQuestion.q;
+    const optEls = m.currentQuestion.options.map((o, i) => `
+      <div class="mv-option">
+        <span class="mv-option-label">${['أ','ب','ج','د'][i]}</span> ${o}
+        ${i === m.currentQuestion.answer ? '<span style="color:var(--green);margin-right:auto;">✓</span>' : ''}
+      </div>
+    `).join('');
+    document.getElementById('mv-q-options').innerHTML = optEls;
+  }
+
+  if (m.status === 'finished') {
+    document.getElementById('match-result-overlay').classList.add('visible');
+  }
+}
+
+function clearBoard() {
+  for (let i = 0; i < 9; i++) {
+    const cell = document.getElementById('mv-cell-' + i);
+    if (cell) { cell.textContent = ''; cell.className = 'xo-cell'; }
+  }
+  document.getElementById('mv-q-text').textContent = '-';
+  document.getElementById('mv-q-options').innerHTML = '';
+}
+
+function highlightWinLine(line) {
+  if (!line) return;
+  line.forEach(i => {
+    const cell = document.getElementById('mv-cell-' + i);
+    if (cell) cell.classList.add('win-cell');
+  });
+}
+
+// ─── Host Actions ─────────────────────────────────────────────────────────────
+function startTournament() {
+  socket.emit('start-tournament', { code: currentCode });
+  document.getElementById('start-btn').disabled = true;
+  document.getElementById('start-btn').textContent = '⏳ جارٍ البدء...';
+}
+
+function manualQualify(playerId) {
+  socket.emit('qualify-player', { code: currentCode, playerId });
+}
+
+function hostRestartMatch() {
+  if (!currentMatchId) return;
+  socket.emit('restart-match', { code: currentCode, matchId: currentMatchId });
+  clearBoard();
+}
+
+function hostQualifyPlayer(playerNum) {
+  const btn = document.getElementById('mv-qualify-p' + playerNum);
+  const playerId = btn.dataset.playerId;
+  if (!playerId) return;
+  socket.emit('qualify-player', { code: currentCode, playerId });
+}
+
+// ─── Event Feed ───────────────────────────────────────────────────────────────
+function appendEvent(ev) {
+  const feed = document.getElementById('event-feed');
+  const item = document.createElement('div');
+  item.className = 'event-item ' + (ev.type || 'info');
+  const time = new Date(ev.time).toLocaleTimeString('ar', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+  item.innerHTML = `<span class="event-time">${time}</span><span>${ev.text}</span>`;
+  feed.insertBefore(item, feed.firstChild);
+  // Keep max 50
+  while (feed.children.length > 50) feed.removeChild(feed.lastChild);
+}
+
+// ─── Utilities ────────────────────────────────────────────────────────────────
+function copyCode() {
+  navigator.clipboard?.writeText(currentCode).then(() => showNotif('تم نسخ الرمز!'));
+  playBeep(660, 'sine', 0.1);
+}
+function copyLink() {
+  const link = document.getElementById('invite-link').value;
+  navigator.clipboard?.writeText(link).then(() => showNotif('تم نسخ الرابط!'));
+}
+
+let notifTimer;
+function showNotif(msg) {
+  clearTimeout(notifTimer);
+  let n = document.querySelector('.notif');
+  if (!n) { n = document.createElement('div'); n.className = 'notif'; document.body.appendChild(n); }
+  n.textContent = msg; n.style.display = 'block';
+  notifTimer = setTimeout(() => { if (n) n.style.display = 'none'; }, 3000);
+}
+
+socket.on('error', (msg) => showNotif('⚠️ ' + msg));
+socket.on('tournament-finished', ({ winner }) => {
+  showNotif('🏆 انتهت البطولة! الفائز: ' + (winner?.name || '-'));
+  playBeep(1047, 'triangle', 1.5, 0.5);
+  setTimeout(() => playBeep(1319, 'triangle', 1.0, 0.4), 300);
+  setTimeout(() => playBeep(1568, 'triangle', 1.2, 0.5), 600);
+});
+</script>
+
+</body>
+</html>

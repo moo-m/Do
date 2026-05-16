@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8">
@@ -8,444 +7,411 @@
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&family=Rajdhani:wght@500;700&display=swap');
 
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
+/* ========== المتغيرات والتنسيق الأساسي ========== */
 :root {
-–bg: #050818;
-–bg2: #080d20;
-–bg3: #0d1530;
-–card: #0f1a35;
-–border: #1a2d5a;
-–gold: #f0c040;
-–gold2: #ffd700;
-–cyan: #00e5ff;
-–purple: #9c27b0;
-–purple2: #ce93d8;
-–blue: #1565c0;
-–blue2: #42a5f5;
-–green: #00e676;
-–red: #ff1744;
-–text: #e8eaf6;
-–text2: #90a4ae;
-–glow-cyan: 0 0 20px rgba(0,229,255,0.4);
-–glow-gold: 0 0 20px rgba(240,192,64,0.5);
-–glow-purple: 0 0 20px rgba(156,39,176,0.4);
+  --bg: #0d0820;
+  --bg2: #130530;
+  --bg3: #1a0a3a;
+  --card: rgba(26,10,58,0.85);
+  --border: rgba(245,200,66,0.3);
+  --gold: #f5c842;
+  --gold-light: #ffe98a;
+  --gold-dark: #c49a1a;
+  --cyan: #00d4aa;
+  --purple: #9b59d6;
+  --purple-dark: #6b2fa0;
+  --purple-light: #ce93d8;
+  --blue: #1565c0;
+  --green: #00e676;
+  --red: #ff1744;
+  --text: #f0eef7;
+  --text2: rgba(255,255,240,0.7);
+  --glow-gold: 0 0 20px rgba(245,200,66,0.4);
+  --glow-cyan: 0 0 20px rgba(0,212,170,0.4);
+  --glow-purple: 0 0 20px rgba(155,77,202,0.4);
 }
 
-html, body { height: 100%; font-family: ‘Cairo’, sans-serif; background: var(–bg); color: var(–text); overflow-x: hidden; }
+* { box-sizing: border-box; margin: 0; padding: 0; }
 
-/* Animated background */
+html, body {
+  height: 100%;
+  font-family: 'Cairo', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  overflow-x: hidden;
+}
+
+/* خلفية النجوم (مقتبسة من الألعاب السابقة) */
 body::before {
-content: ‘’;
-position: fixed; inset: 0;
-background:
-radial-gradient(ellipse at 20% 50%, rgba(21,101,192,0.08) 0%, transparent 60%),
-radial-gradient(ellipse at 80% 20%, rgba(156,39,176,0.08) 0%, transparent 60%),
-radial-gradient(ellipse at 50% 80%, rgba(0,229,255,0.04) 0%, transparent 60%);
-pointer-events: none; z-index: 0;
+  content: '';
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  pointer-events: none;
+  background: radial-gradient(2px 2px at 20px 30px, var(--gold), rgba(0,0,0,0)),
+              radial-gradient(1px 1px at 80px 200px, #fff, rgba(0,0,0,0)),
+              radial-gradient(3px 3px at 400px 500px, var(--purple), rgba(0,0,0,0));
+  background-repeat: no-repeat;
+  background-size: 250px 250px, 300px 300px, 400px 400px;
+  opacity: 0.4;
+  animation: starsMove 60s linear infinite;
+  z-index: 0;
 }
 
-/* Grid overlay */
+@keyframes starsMove {
+  0% { background-position: 0 0, 0 0, 0 0; }
+  100% { background-position: 500px 500px, 300px 200px, 700px 400px; }
+}
+
 body::after {
-content: ‘’;
-position: fixed; inset: 0;
-background-image:
-linear-gradient(rgba(26,45,90,0.3) 1px, transparent 1px),
-linear-gradient(90deg, rgba(26,45,90,0.3) 1px, transparent 1px);
-background-size: 40px 40px;
-pointer-events: none; z-index: 0;
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: linear-gradient(rgba(255,215,0,0.05) 1px, transparent 1px),
+                    linear-gradient(90deg, rgba(255,215,0,0.05) 1px, transparent 1px);
+  background-size: 40px 40px;
+  pointer-events: none;
 }
 
-- { position: relative; z-index: 1; }
+* { position: relative; z-index: 1; }
 
-/* ─── SETUP SCREEN ─── */
+/* ========== شريط الروابط العلوي (مثل المواقع السابقة) ========== */
+.nav-links {
+  position: relative;
+  z-index: 200;
+  display: flex;
+  gap: 20px;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 16px;
+  background: rgba(0, 0, 0, 0.7);
+  border-radius: 60px;
+  backdrop-filter: blur(12px);
+  width: fit-content;
+  margin: 10px auto 20px auto;
+  border: 1px solid rgba(245, 200, 66, 0.3);
+  box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+}
+.nav-link {
+  font-family: 'Cairo', sans-serif;
+  font-size: 16px;
+  font-weight: 600;
+  color: #ffffff;
+  text-decoration: none;
+  transition: all 0.2s ease;
+  background: transparent;
+  padding: 6px 14px;
+  border-radius: 40px;
+  backdrop-filter: blur(4px);
+  border: 1px solid rgba(245, 200, 66, 0.3);
+}
+.nav-link:hover {
+  color: var(--gold);
+  background: rgba(245, 200, 66, 0.15);
+  border-color: var(--gold);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+}
+@media (max-width: 720px) {
+  .nav-links { gap: 10px; padding: 6px 12px; }
+  .nav-link { font-size: 13px; padding: 4px 10px; }
+}
+
+/* ========== شاشة الإعداد (Setup) ========== */
 #setup-screen {
-min-height: 100vh;
-display: flex; flex-direction: column; align-items: center; justify-content: center;
-padding: 2rem;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
 }
 
 .logo {
-font-family: ‘Rajdhani’, sans-serif;
-font-size: clamp(2rem, 5vw, 3.5rem);
-font-weight: 700;
-background: linear-gradient(135deg, var(–gold), var(–cyan), var(–purple2));
--webkit-background-clip: text; -webkit-text-fill-color: transparent;
-text-align: center; margin-bottom: 0.5rem;
-filter: drop-shadow(0 0 20px rgba(240,192,64,0.3));
-letter-spacing: 2px;
+  font-family: 'Rajdhani', sans-serif;
+  font-size: clamp(2rem, 5vw, 3.5rem);
+  font-weight: 700;
+  background: linear-gradient(135deg, var(--gold), var(--cyan), var(--purple-light));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-align: center;
+  margin-bottom: 0.5rem;
+  filter: drop-shadow(0 0 20px rgba(240,192,64,0.3));
+  letter-spacing: 2px;
 }
-.logo-sub { color: var(–text2); font-size: 1rem; text-align: center; margin-bottom: 3rem; }
+.logo-sub { color: var(--text2); font-size: 1rem; text-align: center; margin-bottom: 3rem; }
 
 .setup-card {
-background: var(–card);
-border: 1px solid var(–border);
-border-radius: 20px;
-padding: 2.5rem;
-width: 100%; max-width: 480px;
-box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+  background: var(--card);
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 2.5rem;
+  width: 100%; max-width: 480px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.5);
 }
-
-.setup-card h2 { font-size: 1.4rem; color: var(–cyan); margin-bottom: 1.5rem; text-align: center; }
+.setup-card h2 { font-size: 1.4rem; color: var(--cyan); margin-bottom: 1.5rem; text-align: center; }
 
 .input-group { margin-bottom: 1.2rem; }
-.input-group label { display: block; color: var(–text2); font-size: 0.9rem; margin-bottom: 0.4rem; }
+.input-group label { display: block; color: var(--text2); font-size: 0.9rem; margin-bottom: 0.4rem; }
 .input-group input {
-width: 100%; padding: 0.8rem 1rem;
-background: var(–bg3); border: 1px solid var(–border);
-border-radius: 10px; color: var(–text); font-family: ‘Cairo’, sans-serif;
-font-size: 1rem; outline: none; direction: rtl;
-transition: border-color 0.3s, box-shadow 0.3s;
+  width: 100%; padding: 0.8rem 1rem;
+  background: var(--bg3); border: 1px solid var(--border);
+  border-radius: 10px; color: var(--text);
+  font-family: 'Cairo', sans-serif; font-size: 1rem;
+  outline: none; transition: all 0.3s;
 }
-.input-group input:focus { border-color: var(–cyan); box-shadow: 0 0 15px rgba(0,229,255,0.2); }
+.input-group input:focus { border-color: var(--cyan); box-shadow: var(--glow-cyan); }
 
 .btn {
-padding: 0.9rem 2rem; border: none; border-radius: 12px;
-font-family: ‘Cairo’, sans-serif; font-size: 1.1rem; font-weight: 700;
-cursor: pointer; transition: all 0.3s; width: 100%;
+  padding: 0.9rem 2rem; border: none; border-radius: 12px;
+  font-family: 'Cairo', sans-serif; font-size: 1.1rem; font-weight: 700;
+  cursor: pointer; transition: all 0.3s; width: 100%;
 }
 .btn-gold {
-background: linear-gradient(135deg, #f0c040, #ffd700);
-color: #000;
-box-shadow: 0 4px 20px rgba(240,192,64,0.4);
+  background: linear-gradient(135deg, var(--gold-dark), var(--gold));
+  color: #000;
+  box-shadow: 0 4px 20px rgba(245,200,66,0.4);
 }
-.btn-gold:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(240,192,64,0.6); }
+.btn-gold:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(245,200,66,0.6); }
 .btn-cyan {
-background: linear-gradient(135deg, #006064, #00e5ff);
-color: #000;
-box-shadow: 0 4px 20px rgba(0,229,255,0.3);
+  background: linear-gradient(135deg, #006064, var(--cyan));
+  color: #000;
+  box-shadow: 0 4px 20px rgba(0,212,170,0.3);
 }
-.btn-cyan:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(0,229,255,0.5); }
+.btn-cyan:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(0,212,170,0.5); }
 .btn-purple {
-background: linear-gradient(135deg, #4a148c, #ce93d8);
-color: #fff;
-box-shadow: 0 4px 20px rgba(156,39,176,0.4);
+  background: linear-gradient(135deg, var(--purple-dark), var(--purple));
+  color: #fff;
 }
-.btn-purple:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(156,39,176,0.5); }
 .btn-red { background: linear-gradient(135deg, #b71c1c, #ff5252); color: #fff; }
-.btn-red:hover { transform: translateY(-2px); }
 .btn-sm { padding: 0.5rem 1rem; font-size: 0.85rem; width: auto; border-radius: 8px; }
 
-/* ─── MAIN DASHBOARD ─── */
-#dashboard { display: none; min-height: 100vh; }
+/* ========== لوحة التحكم الرئيسية ========== */
+#dashboard {
+  display: none;
+  min-height: 100vh;
+}
 
 .top-bar {
-background: rgba(8,13,32,0.95);
-border-bottom: 1px solid var(–border);
-padding: 0.8rem 1.5rem;
-display: flex; align-items: center; justify-content: space-between;
-backdrop-filter: blur(10px);
-position: sticky; top: 0; z-index: 100;
+  background: rgba(13,8,32,0.95);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--border);
+  padding: 0.8rem 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky; top: 0; z-index: 100;
 }
-
-.top-bar-logo { font-family: ‘Rajdhani’, sans-serif; font-size: 1.4rem; font-weight: 700; color: var(–gold); letter-spacing: 2px; }
+.top-bar-logo { font-family: 'Rajdhani', sans-serif; font-size: 1.4rem; font-weight: 700; color: var(--gold); }
 .top-bar-code {
-background: var(–bg3); border: 1px solid var(–gold);
-border-radius: 8px; padding: 0.3rem 1rem;
-font-size: 1.5rem; font-weight: 900; color: var(–gold);
-letter-spacing: 4px; cursor: pointer;
-box-shadow: var(–glow-gold);
-font-family: ‘Rajdhani’, sans-serif;
+  background: var(--bg3); border: 1px solid var(--gold);
+  border-radius: 8px; padding: 0.3rem 1rem;
+  font-size: 1.5rem; font-weight: 900; color: var(--gold);
+  letter-spacing: 4px; cursor: pointer;
+  font-family: 'Rajdhani', sans-serif;
 }
-.top-bar-status { color: var(–text2); font-size: 0.9rem; display: flex; align-items: center; gap: 0.5rem; }
-.status-dot { width: 8px; height: 8px; border-radius: 50%; background: var(–green); animation: pulse 1.5s infinite; }
+.top-bar-status { color: var(--text2); font-size: 0.9rem; display: flex; align-items: center; gap: 0.5rem; }
+.status-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); animation: pulse 1.5s infinite; }
+
 @keyframes pulse { 0%,100%{opacity:1;} 50%{opacity:0.3;} }
 
 .dashboard-grid {
-display: grid;
-grid-template-columns: 320px 1fr 300px;
-grid-template-rows: auto 1fr;
-gap: 1rem; padding: 1rem;
-min-height: calc(100vh - 60px);
+  display: grid;
+  grid-template-columns: 320px 1fr 300px;
+  gap: 1rem;
+  padding: 1rem;
+  min-height: calc(100vh - 60px);
 }
+@media (max-width: 1100px) { .dashboard-grid { grid-template-columns: 280px 1fr; } }
+@media (max-width: 768px) { .dashboard-grid { grid-template-columns: 1fr; } }
 
-/* Panel */
+/* لوحات */
 .panel {
-background: var(–card);
-border: 1px solid var(–border);
-border-radius: 16px;
-overflow: hidden;
-display: flex; flex-direction: column;
+  background: var(--card);
+  backdrop-filter: blur(8px);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  overflow: hidden;
+  display: flex; flex-direction: column;
 }
 .panel-header {
-padding: 1rem 1.2rem;
-background: var(–bg3);
-border-bottom: 1px solid var(–border);
-display: flex; align-items: center; justify-content: space-between;
-font-weight: 700; font-size: 1rem;
+  padding: 1rem 1.2rem;
+  background: rgba(26,10,58,0.7);
+  border-bottom: 1px solid var(--border);
+  font-weight: 700; font-size: 1rem;
+  display: flex; align-items: center; justify-content: space-between;
 }
-.panel-header .icon { font-size: 1.2rem; margin-left: 0.5rem; }
 .panel-body { padding: 1rem; flex: 1; overflow-y: auto; }
-.panel-body::-webkit-scrollbar { width: 4px; }
-.panel-body::-webkit-scrollbar-thumb { background: var(–border); border-radius: 2px; }
 
-/* ─── PLAYERS PANEL ─── */
+/* قائمة اللاعبين */
 .player-item {
-display: flex; align-items: center; gap: 0.7rem;
-padding: 0.7rem; border-radius: 10px;
-border: 1px solid var(–border); margin-bottom: 0.5rem;
-transition: all 0.3s; background: var(–bg3);
+  display: flex; align-items: center; gap: 0.7rem;
+  padding: 0.7rem; border-radius: 10px;
+  border: 1px solid var(--border);
+  margin-bottom: 0.5rem;
+  transition: all 0.3s;
+  background: rgba(19,5,48,0.6);
 }
-.player-item:hover { border-color: var(–cyan); }
 .player-avatar {
-width: 36px; height: 36px; border-radius: 50%;
-background: linear-gradient(135deg, var(–blue), var(–purple));
-display: flex; align-items: center; justify-content: center;
-font-weight: 700; font-size: 0.9rem; flex-shrink: 0;
+  width: 36px; height: 36px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--purple-dark), var(--purple));
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 700;
 }
 .player-name { font-weight: 600; flex: 1; }
-.player-status { display: flex; align-items: center; gap: 0.3rem; font-size: 0.75rem; }
-.dot { width: 6px; height: 6px; border-radius: 50%; }
-.dot-green { background: var(–green); }
-.dot-red { background: var(–red); }
 .qualify-btn {
-padding: 0.3rem 0.7rem; background: var(–purple); color: #fff;
-border: none; border-radius: 6px; cursor: pointer;
-font-family: ‘Cairo’, sans-serif; font-size: 0.75rem;
-transition: all 0.2s;
+  padding: 0.3rem 0.7rem; background: var(--purple); color: #fff;
+  border: none; border-radius: 6px; cursor: pointer;
+  font-size: 0.75rem; transition: 0.2s;
 }
-.qualify-btn:hover { background: var(–purple2); color: #000; }
+.qualify-btn:hover { background: var(--gold); color: #000; }
 
-/* ─── LOBBY CONTROLS ─── */
-.invite-box {
-background: var(–bg3); border: 1px solid var(–border);
-border-radius: 12px; padding: 1rem; margin-bottom: 1rem;
-}
-.invite-label { color: var(–text2); font-size: 0.8rem; margin-bottom: 0.4rem; }
-.invite-row { display: flex; gap: 0.5rem; align-items: center; }
-.invite-code {
-flex: 1; background: var(–bg); border: 1px solid var(–gold);
-border-radius: 8px; padding: 0.5rem 0.8rem;
-color: var(–gold); font-family: ‘Rajdhani’, sans-serif;
-font-size: 1.3rem; font-weight: 700; letter-spacing: 3px;
-text-align: center;
-}
-.copy-btn {
-padding: 0.5rem 0.8rem; background: var(–gold); color: #000;
-border: none; border-radius: 8px; cursor: pointer;
-font-size: 0.85rem; font-weight: 700; white-space: nowrap;
-transition: all 0.2s;
-}
-.copy-btn:hover { background: var(–gold2); }
-
-/* ─── BRACKET ─── */
-#bracket-container {
-overflow-x: auto; overflow-y: auto;
-flex: 1; padding: 1rem;
-}
-.bracket-wrapper {
-display: flex; gap: 2rem; align-items: flex-start;
-min-width: max-content; padding: 1rem;
-}
+/* شجرة البطولة */
+#bracket-container { overflow-x: auto; padding: 1rem; }
+.bracket-wrapper { display: flex; gap: 2rem; align-items: flex-start; min-width: max-content; }
 .bracket-round { display: flex; flex-direction: column; gap: 1rem; }
 .round-title {
-font-size: 0.8rem; font-weight: 700; color: var(–gold);
-text-align: center; padding: 0.4rem;
-border-bottom: 1px solid var(–gold);
-margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 1px;
+  font-size: 0.8rem; font-weight: 700; color: var(--gold);
+  text-align: center; padding: 0.4rem;
+  border-bottom: 1px solid var(--gold);
+  margin-bottom: 0.5rem;
 }
-
 .bracket-match {
-background: var(–bg3); border: 1px solid var(–border);
-border-radius: 12px; overflow: hidden; cursor: pointer;
-transition: all 0.3s; min-width: 180px;
-box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+  background: rgba(19,5,48,0.7);
+  border: 1px solid var(--border);
+  border-radius: 12px; overflow: hidden;
+  cursor: pointer; min-width: 180px;
+  transition: all 0.3s;
 }
-.bracket-match:hover { border-color: var(–cyan); box-shadow: 0 4px 25px rgba(0,229,255,0.2); transform: translateY(-2px); }
-.bracket-match.active { border-color: var(–cyan); box-shadow: var(–glow-cyan); animation: glow-pulse 2s infinite; }
-.bracket-match.finished { border-color: var(–green); opacity: 0.8; }
-.bracket-match.pending { opacity: 0.6; }
-
-@keyframes glow-pulse {
-0%,100%{ box-shadow: 0 0 15px rgba(0,229,255,0.3); }
-50%{ box-shadow: 0 0 30px rgba(0,229,255,0.6); }
-}
-
+.bracket-match:hover { border-color: var(--cyan); transform: translateY(-2px); }
+.bracket-match.active { border-color: var(--cyan); box-shadow: var(--glow-cyan); }
+.bracket-match.finished { border-color: var(--green); }
 .bm-player {
-padding: 0.5rem 0.8rem; display: flex; align-items: center; gap: 0.5rem;
-font-size: 0.85rem; font-weight: 600;
-border-bottom: 1px solid var(–border);
+  padding: 0.5rem 0.8rem; display: flex; align-items: center; gap: 0.5rem;
+  font-size: 0.85rem; border-bottom: 1px solid var(--border);
 }
 .bm-player:last-child { border-bottom: none; }
-.bm-player.winner { background: rgba(0,230,118,0.1); color: var(–green); }
-.bm-player.loser { opacity: 0.5; }
-.bm-symbol { font-family: ‘Rajdhani’, sans-serif; font-weight: 700; font-size: 1rem; margin-right: auto; }
-.bm-symbol.x { color: var(–cyan); }
-.bm-symbol.o { color: var(–gold); }
+.bm-player.winner { background: rgba(0,230,118,0.1); color: var(--green); }
+.bm-symbol { font-family: 'Rajdhani', sans-serif; font-weight: 700; font-size: 1rem; margin-right: auto; }
+.bm-symbol.x { color: var(--cyan); }
+.bm-symbol.o { color: var(--gold); }
 .trophy { margin-right: auto; }
 
-/* ─── MATCH VIEWER ─── */
+/* مشاهد المباراة */
 #match-viewer {
-background: var(–card); border: 1px solid var(–cyan);
-border-radius: 16px; padding: 1.2rem;
-box-shadow: var(–glow-cyan);
-display: none; grid-column: 2; grid-row: 1 / 3;
+  background: var(--card);
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--cyan);
+  border-radius: 16px;
+  padding: 1.2rem;
+  display: none;
+  grid-column: 2;
+  grid-row: 1 / 3;
 }
 #match-viewer.visible { display: block; }
 
-.mv-header {
-display: flex; align-items: center; justify-content: space-between;
-margin-bottom: 1rem; padding-bottom: 0.8rem; border-bottom: 1px solid var(–border);
-}
-.mv-title { font-size: 1.1rem; font-weight: 700; color: var(–cyan); }
-.mv-close {
-background: var(–bg3); border: 1px solid var(–border);
-color: var(–text2); width: 30px; height: 30px; border-radius: 50%;
-cursor: pointer; font-size: 1rem; display: flex; align-items: center; justify-content: center;
-transition: all 0.2s;
-}
-.mv-close:hover { background: var(–red); color: #fff; border-color: var(–red); }
+.mv-header { display: flex; justify-content: space-between; margin-bottom: 1rem; border-bottom: 1px solid var(--border); padding-bottom: 0.8rem; }
+.mv-title { font-weight: 700; color: var(--cyan); }
+.mv-close { background: var(--bg3); border: 1px solid var(--border); border-radius: 50%; width: 30px; height: 30px; cursor: pointer; }
+.mv-players { display: flex; justify-content: space-around; margin-bottom: 1rem; }
+.mv-player { text-align: center; padding: 0.8rem 1.5rem; border: 2px solid var(--border); border-radius: 12px; min-width: 120px; }
+.mv-player.active-turn { border-color: var(--cyan); box-shadow: var(--glow-cyan); background: rgba(0,212,170,0.05); }
+.mv-player-symbol { font-size: 2rem; font-weight: 700; }
+.mv-player-symbol.x { color: var(--cyan); }
+.mv-player-symbol.o { color: var(--gold); }
 
-.mv-players {
-display: flex; align-items: center; justify-content: space-around;
-margin-bottom: 1rem;
-}
-.mv-player {
-text-align: center; padding: 0.8rem 1.5rem;
-border-radius: 12px; border: 2px solid var(–border);
-transition: all 0.3s; min-width: 120px;
-}
-.mv-player.active-turn { border-color: var(–cyan); box-shadow: var(–glow-cyan); background: rgba(0,229,255,0.05); }
-.mv-player-name { font-weight: 700; font-size: 1rem; }
-.mv-player-symbol { font-family: ‘Rajdhani’, sans-serif; font-size: 2rem; font-weight: 700; }
-.mv-player-symbol.x { color: var(–cyan); }
-.mv-player-symbol.o { color: var(–gold); }
-.mv-vs { color: var(–text2); font-size: 1.2rem; font-weight: 700; }
-
-/* XO Board */
 .xo-board {
-display: grid; grid-template-columns: repeat(3, 1fr);
-gap: 8px; max-width: 240px; margin: 0 auto 1.5rem;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  max-width: 240px;
+  margin: 0 auto 1.5rem;
 }
 .xo-cell {
-aspect-ratio: 1;
-background: var(–bg3); border: 2px solid var(–border);
-border-radius: 12px; display: flex; align-items: center; justify-content: center;
-font-family: ‘Rajdhani’, sans-serif; font-size: 2.5rem; font-weight: 700;
-cursor: default; transition: all 0.3s;
-position: relative; overflow: hidden;
+  aspect-ratio: 1;
+  background: var(--bg3);
+  border: 2px solid var(--border);
+  border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 2.5rem;
+  font-weight: 700;
 }
-.xo-cell.x-cell { color: var(–cyan); border-color: rgba(0,229,255,0.4); background: rgba(0,229,255,0.05); }
-.xo-cell.o-cell { color: var(–gold); border-color: rgba(240,192,64,0.4); background: rgba(240,192,64,0.05); }
-.xo-cell.win-cell { animation: win-glow 1s ease-in-out infinite alternate; }
+.xo-cell.x-cell { color: var(--cyan); border-color: rgba(0,212,170,0.4); background: rgba(0,212,170,0.05); }
+.xo-cell.o-cell { color: var(--gold); border-color: rgba(245,200,66,0.4); background: rgba(245,200,66,0.05); }
+.xo-cell.win-cell { animation: win-glow 1s infinite alternate; }
 @keyframes win-glow {
-from { box-shadow: inset 0 0 20px rgba(0,230,118,0.3); border-color: var(–green); }
-to { box-shadow: inset 0 0 40px rgba(0,230,118,0.6); border-color: var(–green); }
+  from { box-shadow: inset 0 0 20px rgba(0,230,118,0.3); border-color: var(--green); }
+  to { box-shadow: inset 0 0 40px rgba(0,230,118,0.6); border-color: var(--green); }
 }
-.xo-cell-appear { animation: cell-pop 0.3s cubic-bezier(0.34,1.56,0.64,1); }
-@keyframes cell-pop { from{transform:scale(0);opacity:0;} to{transform:scale(1);opacity:1;} }
+.xo-cell-appear { animation: cell-pop 0.3s ease; }
+@keyframes cell-pop { from { transform: scale(0); opacity: 0; } to { transform: scale(1); opacity: 1; } }
 
-/* Question area */
 .mv-question {
-background: var(–bg3); border: 1px solid var(–purple);
-border-radius: 12px; padding: 1rem;
-box-shadow: var(–glow-purple); margin-bottom: 1rem;
+  background: var(--bg3);
+  border: 1px solid var(--purple);
+  border-radius: 12px;
+  padding: 1rem;
+  margin-bottom: 1rem;
 }
-.mv-q-label { color: var(–purple2); font-size: 0.8rem; margin-bottom: 0.5rem; }
-.mv-q-text { font-size: 1rem; font-weight: 600; color: var(–text); line-height: 1.6; margin-bottom: 0.8rem; }
+.mv-q-label { color: var(--purple-light); font-size: 0.8rem; }
+.mv-q-text { font-size: 1rem; margin: 0.5rem 0; }
 .mv-options { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; }
-.mv-option {
-background: var(–bg); border: 1px solid var(–border);
-border-radius: 8px; padding: 0.5rem 0.7rem;
-font-size: 0.85rem; color: var(–text2); direction: rtl;
-display: flex; align-items: center; gap: 0.5rem;
-}
-.mv-option-label { color: var(–cyan); font-family: ‘Rajdhani’, sans-serif; font-weight: 700; }
+.mv-option { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 0.5rem; display: flex; align-items: center; gap: 0.5rem; }
+.mv-option-label { color: var(--cyan); font-weight: 700; }
 
-/* Match controls */
-.match-controls { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 1rem; }
-
-/* ─── EVENT FEED ─── */
-#event-feed { display: flex; flex-direction: column; gap: 0; }
-.event-item {
-padding: 0.6rem 0.8rem;
-border-bottom: 1px solid rgba(26,45,90,0.5);
-font-size: 0.85rem; line-height: 1.4;
-animation: slide-in 0.4s ease;
-display: flex; align-items: flex-start; gap: 0.5rem;
-}
-@keyframes slide-in { from{opacity:0;transform:translateX(20px);} to{opacity:1;transform:translateX(0);} }
-.event-item.info { color: var(–text2); }
-.event-item.correct { color: var(–green); }
-.event-item.wrong { color: var(–red); }
-.event-item.move { color: var(–blue2); }
-.event-item.qualify { color: var(–gold); }
-.event-item.round { color: var(–cyan); font-weight: 700; }
-.event-item.join { color: var(–purple2); }
-.event-item.start { color: var(–gold); font-weight: 700; }
-.event-item.draw { color: #ff9800; }
-.event-item.champion { color: var(–gold2); font-weight: 900; font-size: 1rem; }
-.event-item.leave { color: var(–text2); opacity: 0.7; }
-.event-time { color: var(–text2); font-size: 0.7rem; white-space: nowrap; opacity: 0.7; }
-
-/* ─── TOURNAMENT STATUS BAR ─── */
-.status-bar {
-display: flex; gap: 1rem; padding: 0.8rem 1rem;
-background: var(–bg3); border-bottom: 1px solid var(–border);
-}
-.stat-box {
-background: var(–card); border: 1px solid var(–border);
-border-radius: 10px; padding: 0.6rem 1rem;
-text-align: center; flex: 1;
-}
-.stat-value { font-size: 1.5rem; font-weight: 900; color: var(–cyan); font-family: ‘Rajdhani’, sans-serif; }
-.stat-label { font-size: 0.75rem; color: var(–text2); }
-
-/* Notifications */
-.notif {
-position: fixed; top: 80px; left: 50%; transform: translateX(-50%);
-background: var(–card); border: 1px solid var(–cyan);
-border-radius: 12px; padding: 1rem 2rem;
-color: var(–cyan); font-weight: 700;
-box-shadow: var(–glow-cyan); z-index: 1000;
-animation: notif-in 0.4s ease;
-}
-@keyframes notif-in { from{opacity:0;transform:translateX(-50%) translateY(-20px);} to{opacity:1;transform:translateX(-50%) translateY(0);} }
-
-/* Section label */
-.section-label {
-display: flex; align-items: center; gap: 0.5rem;
-font-size: 0.8rem; color: var(–text2); margin-bottom: 0.8rem;
-padding-bottom: 0.5rem; border-bottom: 1px solid var(–border);
-}
-.section-label::before { content: ‘’; flex: 1; height: 1px; background: var(–border); }
-
-/* Round info */
-.round-badge {
-background: linear-gradient(135deg, var(–blue), var(–purple));
-border-radius: 8px; padding: 0.3rem 0.8rem;
-font-size: 0.85rem; font-weight: 700; color: #fff; display: inline-block;
-}
-
-/* Responsive */
-@media (max-width: 1100px) {
-.dashboard-grid { grid-template-columns: 280px 1fr; }
-}
-@media (max-width: 768px) {
-.dashboard-grid { grid-template-columns: 1fr; }
-.top-bar-logo { font-size: 1rem; }
-}
-
-/* Scrollbar */
-::-webkit-scrollbar { width: 6px; }
-::-webkit-scrollbar-track { background: var(–bg); }
-::-webkit-scrollbar-thumb { background: var(–border); border-radius: 3px; }
-
-/* Match ended overlay */
 .match-result-overlay {
-background: rgba(0,230,118,0.1); border: 1px solid var(–green);
-border-radius: 12px; padding: 1rem; text-align: center;
-margin-bottom: 1rem; display: none;
+  background: rgba(0,230,118,0.1);
+  border: 1px solid var(--green);
+  border-radius: 12px;
+  padding: 1rem;
+  text-align: center;
+  margin-bottom: 1rem;
+  display: none;
 }
-.match-result-overlay.visible { display: block; animation: slide-in 0.5s ease; }
-.match-result-overlay .winner-name { font-size: 1.5rem; font-weight: 900; color: var(–green); }
-</style>
+.match-result-overlay.visible { display: block; }
+.winner-name { font-size: 1.5rem; font-weight: 900; color: var(--green); }
 
+/* حدث */
+.event-item {
+  padding: 0.6rem 0.8rem;
+  border-bottom: 1px solid rgba(245,200,66,0.1);
+  font-size: 0.85rem;
+  display: flex; gap: 0.5rem;
+  align-items: flex-start;
+}
+.event-time { color: var(--text2); font-size: 0.7rem; white-space: nowrap; }
+.event-item.correct { color: var(--green); }
+.event-item.wrong { color: var(--red); }
+.event-item.qualify { color: var(--gold); }
+.event-item.round { color: var(--cyan); font-weight: 700; }
+.event-item.champion { color: var(--gold-light); font-weight: 900; }
+
+/* باقي العناصر */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+.notif {
+  position: fixed; top: 80px; left: 50%; transform: translateX(-50%);
+  background: var(--card); border: 1px solid var(--cyan);
+  border-radius: 12px; padding: 1rem 2rem;
+  color: var(--cyan); font-weight: 700;
+  z-index: 1000; backdrop-filter: blur(12px);
+}
+</style>
 </head>
 <body>
 
-<!-- ─── SETUP SCREEN ─── -->
+<!-- ========== شريط الروابط ========== -->
+<div class="nav-links">
+  <a href="https://moo-m.github.io/Steam/" class="nav-link" target="_blank">⌂</a>
+  <a href="https://moo-m.github.io/Steam/3D.html" class="nav-link" target="_blank">3D</a>
+  <a href="https://moo-m.github.io/Steam/angel.html" class="nav-link" target="_blank">🪽</a>
+  <a href="https://moo-m.github.io/Steam/memoryGame.html" class="nav-link" target="_blank">🧩</a>
+  <a href="https://moo-m.github.io/Steam/wordCatcher.html" class="nav-link" target="_blank">🪝</a>
+</div>
 
+<!-- ========== شاشة الإعداد ========== -->
 <div id="setup-screen">
   <div class="logo">🏆 XO ARABIC TOURNAMENT</div>
   <div class="logo-sub">منصة بطولة XO التعليمية العربية</div>
@@ -459,145 +425,100 @@ margin-bottom: 1rem; display: none;
   </div>
 </div>
 
-<!-- ─── MAIN DASHBOARD ─── -->
-
+<!-- ========== لوحة التحكم ========== -->
 <div id="dashboard">
   <div class="top-bar">
     <div class="top-bar-logo">⚡ XO TOURNAMENT HOST</div>
-    <div class="top-bar-code" id="code-display" onclick="copyCode()" title="انقر للنسخ">------</div>
+    <div class="top-bar-code" id="code-display" onclick="copyCode()">------</div>
     <div class="top-bar-status">
       <span class="status-dot"></span>
       <span id="status-text">جاهز</span>
     </div>
   </div>
 
-  <div class="status-bar">
-    <div class="stat-box">
-      <div class="stat-value" id="stat-players">0</div>
-      <div class="stat-label">اللاعبون</div>
+  <div class="status-bar" style="display: flex; gap: 1rem; padding: 0.8rem 1rem; background: rgba(19,5,48,0.6);">
+    <div class="stat-box" style="background: var(--card); border:1px solid var(--border); border-radius:10px; padding:0.6rem 1rem; text-align:center; flex:1;">
+      <div class="stat-value" id="stat-players" style="font-size:1.5rem; font-weight:900; color:var(--cyan);">0</div>
+      <div class="stat-label" style="font-size:0.75rem;">اللاعبون</div>
     </div>
-    <div class="stat-box">
-      <div class="stat-value" id="stat-round">-</div>
+    <div class="stat-box" style="background: var(--card); border:1px solid var(--border); border-radius:10px; padding:0.6rem 1rem; text-align:center; flex:1;">
+      <div class="stat-value" id="stat-round" style="font-size:1.5rem; font-weight:900; color:var(--cyan);">-</div>
       <div class="stat-label">الجولة</div>
     </div>
-    <div class="stat-box">
-      <div class="stat-value" id="stat-matches">0</div>
+    <div class="stat-box" style="background: var(--card); border:1px solid var(--border); border-radius:10px; padding:0.6rem 1rem; text-align:center; flex:1;">
+      <div class="stat-value" id="stat-matches" style="font-size:1.5rem; font-weight:900; color:var(--cyan);">0</div>
       <div class="stat-label">المباريات</div>
     </div>
-    <div class="stat-box">
-      <div class="stat-value" id="stat-status">🟡</div>
+    <div class="stat-box" style="background: var(--card); border:1px solid var(--border); border-radius:10px; padding:0.6rem 1rem; text-align:center; flex:1;">
+      <div class="stat-value" id="stat-status" style="font-size:1.5rem; font-weight:900; color:var(--cyan);">🟡</div>
       <div class="stat-label">الحالة</div>
     </div>
   </div>
 
   <div class="dashboard-grid">
-
-```
-<!-- LEFT: Players + Lobby -->
-<div style="display:flex;flex-direction:column;gap:1rem;">
-
-  <!-- Lobby controls -->
-  <div class="panel" id="lobby-panel">
-    <div class="panel-header"><span class="icon">🎯</span> التحكم في البطولة</div>
-    <div class="panel-body">
-      <div class="invite-box">
-        <div class="invite-label">رمز الدعوة</div>
-        <div class="invite-row">
-          <div class="invite-code" id="invite-code">------</div>
-          <button class="copy-btn" onclick="copyCode()">📋 نسخ</button>
+    <!-- القسم الأيسر -->
+    <div style="display:flex; flex-direction:column; gap:1rem;">
+      <div class="panel">
+        <div class="panel-header"><span>🎯 التحكم في البطولة</span></div>
+        <div class="panel-body">
+          <div class="invite-box" style="background:var(--bg3); border:1px solid var(--border); border-radius:12px; padding:1rem; margin-bottom:1rem;">
+            <div class="invite-label" style="color:var(--text2);">رمز الدعوة</div>
+            <div class="invite-row" style="display:flex; gap:0.5rem; align-items:center;">
+              <div class="invite-code" id="invite-code" style="flex:1; background:var(--bg); padding:0.5rem; border-radius:8px; text-align:center; color:var(--gold); font-weight:700; letter-spacing:3px;">------</div>
+              <button class="copy-btn btn-gold btn-sm" onclick="copyCode()">📋 نسخ</button>
+            </div>
+          </div>
+          <button class="btn btn-gold" id="start-btn" onclick="startTournament()" style="margin-bottom:0.5rem;">🚀 بدء البطولة</button>
+          <div style="color:var(--text2); font-size:0.8rem; text-align:center;">يجب أن يكون هناك لاعبان على الأقل</div>
         </div>
       </div>
-      <div class="invite-box" style="margin-bottom:1rem;">
-        <div class="invite-label">رابط الانضمام</div>
-        <div class="invite-row">
-          <input id="invite-link" style="flex:1;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:0.5rem;color:var(--text2);font-size:0.8rem;direction:ltr;" readonly>
-          <button class="copy-btn" onclick="copyLink()">🔗 نسخ</button>
+
+      <div class="panel" style="flex:1;">
+        <div class="panel-header"><span>👥 اللاعبون</span><span id="player-count" style="color:var(--cyan);">0</span></div>
+        <div class="panel-body" id="players-list">...</div>
+      </div>
+    </div>
+
+    <!-- القسم الأوسط -->
+    <div style="display:flex; flex-direction:column; gap:1rem;">
+      <div id="match-viewer">
+        <div class="mv-header">
+          <div class="mv-title">🎮 مشاهدة المباراة المباشرة</div>
+          <button class="mv-close" onclick="closeMatchViewer()">✕</button>
+        </div>
+        <div class="match-result-overlay" id="match-result-overlay">
+          <div style="font-size:0.9rem;">الفائز</div>
+          <div class="winner-name" id="winner-display">-</div>
+        </div>
+        <div class="mv-players">
+          <div class="mv-player" id="mv-p1"><div class="mv-player-symbol x">X</div><div class="mv-player-name" id="mv-p1-name">-</div></div>
+          <div class="mv-vs">VS</div>
+          <div class="mv-player" id="mv-p2"><div class="mv-player-symbol o">O</div><div class="mv-player-name" id="mv-p2-name">-</div></div>
+        </div>
+        <div class="xo-board" id="mv-board"></div>
+        <div class="mv-question"><div class="mv-q-label">📚 السؤال الحالي</div><div class="mv-q-text" id="mv-q-text">-</div><div class="mv-options" id="mv-q-options"></div></div>
+        <div class="match-controls" style="display:flex; gap:0.5rem; margin-top:1rem;">
+          <button class="btn btn-purple btn-sm" id="mv-restart-btn" onclick="hostRestartMatch()">🔄 إعادة المباراة</button>
+          <button class="btn btn-red btn-sm" id="mv-qualify-p1" onclick="hostQualifyPlayer(1)">👑 تأهيل X</button>
+          <button class="btn btn-red btn-sm" id="mv-qualify-p2" onclick="hostQualifyPlayer(2)">👑 تأهيل O</button>
         </div>
       </div>
-      <button class="btn btn-gold" id="start-btn" onclick="startTournament()" style="margin-bottom:0.5rem;">🚀 بدء البطولة</button>
-      <div style="color:var(--text2);font-size:0.8rem;text-align:center;">يجب أن يكون هناك لاعبان على الأقل</div>
-    </div>
-  </div>
 
-  <!-- Players list -->
-  <div class="panel" style="flex:1;">
-    <div class="panel-header">
-      <span><span class="icon">👥</span> اللاعبون</span>
-      <span id="player-count" style="color:var(--cyan);font-family:'Rajdhani',sans-serif;font-size:1.2rem;">0</span>
-    </div>
-    <div class="panel-body" id="players-list">
-      <div style="color:var(--text2);text-align:center;padding:2rem;font-size:0.9rem;">في انتظار انضمام اللاعبين...</div>
-    </div>
-  </div>
-</div>
-
-<!-- CENTER: Bracket + Match Viewer -->
-<div style="display:flex;flex-direction:column;gap:1rem;">
-
-  <!-- Match viewer (hidden by default) -->
-  <div id="match-viewer">
-    <div class="mv-header">
-      <div class="mv-title">🎮 مشاهدة المباراة المباشرة</div>
-      <button class="mv-close" onclick="closeMatchViewer()">✕</button>
-    </div>
-
-    <div class="match-result-overlay" id="match-result-overlay">
-      <div style="font-size:0.9rem;color:var(--text2);margin-bottom:0.3rem;">الفائز</div>
-      <div class="winner-name" id="winner-display">-</div>
-    </div>
-
-    <div class="mv-players">
-      <div class="mv-player" id="mv-p1">
-        <div class="mv-player-symbol x">X</div>
-        <div class="mv-player-name" id="mv-p1-name">-</div>
-      </div>
-      <div class="mv-vs">VS</div>
-      <div class="mv-player" id="mv-p2">
-        <div class="mv-player-symbol o">O</div>
-        <div class="mv-player-name" id="mv-p2-name">-</div>
+      <div class="panel">
+        <div class="panel-header"><span>🏆 شجرة البطولة</span><span class="round-badge" style="background:linear-gradient(135deg,var(--blue),var(--purple)); border-radius:8px; padding:0.3rem 0.8rem; font-size:0.85rem;" id="round-badge">-</span></div>
+        <div id="bracket-container"></div>
       </div>
     </div>
 
-    <div class="xo-board" id="mv-board">
-      <!-- cells generated by JS -->
-    </div>
-
-    <div class="mv-question" id="mv-question-box">
-      <div class="mv-q-label">📚 السؤال الحالي</div>
-      <div class="mv-q-text" id="mv-q-text">-</div>
-      <div class="mv-options" id="mv-q-options"></div>
-    </div>
-
-    <div class="match-controls">
-      <button class="btn btn-purple btn-sm" id="mv-restart-btn" onclick="hostRestartMatch()">🔄 إعادة المباراة</button>
-      <button class="btn btn-red btn-sm" id="mv-qualify-p1" onclick="hostQualifyPlayer(1)">👑 تأهيل X</button>
-      <button class="btn btn-red btn-sm" id="mv-qualify-p2" onclick="hostQualifyPlayer(2)">👑 تأهيل O</button>
-    </div>
-  </div>
-
-  <!-- Bracket -->
-  <div class="panel" style="flex:1;">
-    <div class="panel-header"><span class="icon">🏆</span> شجرة البطولة <span class="round-badge" id="round-badge">-</span></div>
-    <div id="bracket-container">
-      <div style="color:var(--text2);text-align:center;padding:3rem;font-size:0.9rem;">ستظهر شجرة البطولة عند بدء المباريات</div>
+    <!-- القسم الأيمن -->
+    <div class="panel">
+      <div class="panel-header"><span>⚡ الأحداث المباشرة</span></div>
+      <div class="panel-body" id="event-feed-container" style="padding:0;"><div id="event-feed"></div></div>
     </div>
   </div>
 </div>
-
-<!-- RIGHT: Event Feed -->
-<div class="panel" style="min-height:300px;">
-  <div class="panel-header"><span class="icon">⚡</span> الأحداث المباشرة</div>
-  <div class="panel-body" id="event-feed-container" style="padding:0;">
-    <div id="event-feed"></div>
-  </div>
-</div>
-```
-
-  </div><!-- /dashboard-grid -->
-</div><!-- /dashboard -->
 
 <script src="/socket.io/socket.io.js"></script>
-
 <script>
 const socket = io();
 let currentCode = '';
@@ -929,6 +850,5 @@ socket.on('tournament-finished', ({ winner }) => {
   setTimeout(() => playBeep(1568, 'triangle', 1.2, 0.5), 600);
 });
 </script>
-
 </body>
 </html>

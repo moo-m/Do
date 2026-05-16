@@ -520,335 +520,187 @@ body::after {
 
 <script src="/socket.io/socket.io.js"></script>
 <script>
-const socket = io();
-let currentCode = '';
-let currentMatchId = null;
-let viewingMatch = null;
-let tournamentData = null;
 
-// ─── Audio ───────────────────────────────────────────────────────────────────
-const AudioCtx = window.AudioContext || window.webkitAudioContext;
-let ctx;
-function initAudio() {
-  if (!ctx) ctx = new AudioCtx();
-}
-function playBeep(freq=440, type='sine', duration=0.2, vol=0.3) {
-  try {
-    if (!ctx) return;
-    const o = ctx.createOscillator();
-    const g = ctx.createGain();
-    o.connect(g); g.connect(ctx.destination);
-    o.type = type; o.frequency.value = freq;
-    g.gain.setValueAtTime(vol, ctx.currentTime);
-    g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duration);
-    o.start(); o.stop(ctx.currentTime + duration);
-  } catch(e){}
-}
+  const socket = io();
+        let currentTournament = null;
+        let currentMatchId = null;
 
-document.addEventListener('click', initAudio, { once: true });
+        function createTournament() {
+            socket.emit('create-tournament');
+        }
 
-// ─── Create Tournament ────────────────────────────────────────────────────────
-function createTournament() {
-  const name = document.getElementById('host-name').value.trim() || 'المضيف';
-  socket.emit('create-tournament', { hostName: name });
-}
+        function startTournament() {
+            socket.emit('start-tournament');
+        }
 
-socket.on('tournament-created', ({ code, inviteLink }) => {
-  currentCode = code;
-  document.getElementById('setup-screen').style.display = 'none';
-  document.getElementById('dashboard').style.display = 'block';
-  document.getElementById('code-display').textContent = code;
-  document.getElementById('invite-code').textContent = code;
-  document.getElementById('invite-link').value = window.location.origin + inviteLink;
-  initBoardCells();
-  playBeep(880, 'sine', 0.4, 0.3);
-  showNotif('تم إنشاء البطولة! رمز الدعوة: ' + code);
-});
+        function copyInvite() {
+            const url = window.location.origin + '/player?t=' + currentTournament.id;
+            navigator.clipboard.writeText(url);
+            alert('تم نسخ الرابط!');
+        }
 
-socket.on('tournament-update', (t) => {
-  tournamentData = t;
-  updateDashboard(t);
-});
+        socket.on('tournament-created', (t) => {
+            currentTournament = t;
+            document.getElementById('create-btn').style.display = 'none';
+            document.getElementById('lobby-view').style.display = 'block';
+            document.getElementById('t-code').innerText = t.id;
+            updateUI();
+        });
 
-socket.on('event-feed-update', (ev) => {
-  appendEvent(ev);
-  if (ev.type === 'correct' || ev.type === 'qualify') playBeep(660, 'sine', 0.2);
-  if (ev.type === 'wrong') playBeep(220, 'sawtooth', 0.2);
-  if (ev.type === 'round' || ev.type === 'start') playBeep(880, 'sine', 0.5);
-});
+        socket.on('tournament-update', (t) => {
+            currentTournament = t;
+            updateUI();
+        });
 
-socket.on('match-update', (m) => {
-  if (viewingMatch && m.id === viewingMatch) {
-    updateMatchViewer(m);
-  }
-});
+        socket.on('event-feed-update', (event) => {
+            const feed = document.getElementById('event-feed');
+            const div = document.createElement('div');
+            div.className = 'event-item';
+            div.innerHTML = `<strong>[${event.time}]</strong> ${event.message}`;
+            feed.prepend(div);
+        });
 
-socket.on('match-viewer', ({ matchId, match }) => {
-  // Auto-open viewer for first match
-});
+        function updateUI() {
+            if (!currentTournament) return;
 
-socket.on('match-ended', ({ winner, line }) => {
-  if (viewingMatch) {
-    highlightWinLine(line);
-    document.getElementById('match-result-overlay').classList.add('visible');
-    document.getElementById('winner-display').textContent = winner?.name || 'تعادل';
-    playBeep(1047, 'sine', 0.8, 0.4);
-  }
-});
+            if (currentTournament.status === 'lobby') {
+                document.getElementById('lobby-view').style.display = 'block';
+                document.getElementById('active-view').style.display = 'none';
+                
+                const list = document.getElementById('player-list');
+                list.innerHTML = '';
+                currentTournament.players.forEach(p => {
+                    const li = document.createElement('li');
+                    li.className = 'player-item';
+                    li.innerHTML = `<span>${p.name}</span> <span class="status-${p.status}">${p.status === 'online' ? 'متصل' : 'غير متصل'}</span>`;
+                    list.appendChild(li);
+                });
+                document.getElementById('player-count').innerText = currentTournament.players.length;
+                document.getElementById('start-btn').disabled = currentTournament.players.length < 2;
+            } else {
+                document.getElementById('lobby-view').style.display = 'none';
+                document.getElementById('active-view').style.display = 'block';
+                renderBracket();
+            }
+        }
 
-// ─── Dashboard update ─────────────────────────────────────────────────────────
-function updateDashboard(t) {
-  document.getElementById('stat-players').textContent = t.players.length;
-  document.getElementById('stat-round').textContent = t.rounds.length > 0 ? (t.currentRound + 1) : '-';
-  const activeMatches = t.rounds.reduce((a, r) => a + r.matches.filter(m => m.status === 'active').length, 0);
-  document.getElementById('stat-matches').textContent = activeMatches;
-  const statusMap = { lobby: '🟡', active: '🟢', finished: '🏆' };
-  document.getElementById('stat-status').textContent = statusMap[t.status] || '🟡';
+        function renderBracket() {
+            const container = document.getElementById('bracket');
+            container.innerHTML = '';
+            
+            currentTournament.rounds.forEach((round, rIdx) => {
+                const roundDiv = document.createElement('div');
+                roundDiv.className = 'round';
+                roundDiv.innerHTML = `<h4>الجولة ${rIdx + 1}</h4>`;
+                
+                round.forEach(mId => {
+                    const matchDiv = document.createElement('div');
+                    matchDiv.className = 'match-card';
+                    
+                    if (typeof mId === 'object') {
+                        matchDiv.innerHTML = `<div class="match-player winner"><span>${mId.bye.name}</span> <span>تأهل تلقائي</span></div>`;
+                    } else {
+                        // This is a bit tricky since we don't have all match data in tournament object
+                        // We'll need to fetch or handle this. For now, let's assume we have basic info
+                        matchDiv.onclick = () => watchMatch(mId);
+                        matchDiv.id = `m-${mId}`;
+                        matchDiv.innerHTML = 'جاري التحميل...';
+                        socket.emit('watch-match', mId);
+                    }
+                    roundDiv.appendChild(matchDiv);
+                });
+                container.appendChild(roundDiv);
+            });
+        }
 
-  const roundName = t.rounds[t.currentRound]?.name || '-';
-  document.getElementById('round-badge').textContent = roundName;
-  document.getElementById('status-text').textContent = t.status === 'lobby' ? 'اللوبي' : t.status === 'active' ? 'جارية' : 'منتهية';
+        socket.on('match-update', (match) => {
+            const matchDiv = document.getElementById(`m-${match.id}`);
+            if (matchDiv) {
+                matchDiv.className = `match-card ${match.status === 'active' ? 'active' : ''}`;
+                matchDiv.innerHTML = `
+                    <div class="match-player ${match.winner === 0 ? 'winner' : ''}">
+                        <span>${match.players[0].name}</span>
+                        <span>${match.board.filter(c => c === 'X').length}</span>
+                    </div>
+                    <div class="match-player ${match.winner === 1 ? 'winner' : ''}">
+                        <span>${match.players[1].name}</span>
+                        <span>${match.board.filter(c => c === 'O').length}</span>
+                    </div>
+                `;
+            }
 
-  updatePlayersList(t.players);
-  updateBracket(t);
-  document.getElementById('player-count').textContent = t.players.length;
-}
+            if (currentMatchId === match.id) {
+                updateModal(match);
+            }
+        });
 
-function updatePlayersList(players) {
-  const el = document.getElementById('players-list');
-  if (!players.length) {
-    el.innerHTML = '<div style="color:var(--text2);text-align:center;padding:2rem;font-size:0.9rem;">في انتظار انضمام اللاعبين...</div>';
-    return;
-  }
-  el.innerHTML = players.map(p => `
-    <div class="player-item">
-      <div class="player-avatar">${p.name.charAt(0)}</div>
-      <div style="flex:1;">
-        <div class="player-name">${p.name}</div>
-        <div class="player-status">
-          <span class="dot ${p.online ? 'dot-green' : 'dot-red'}"></span>
-          <span style="color:var(--text2);">${p.online ? 'متصل' : 'غير متصل'}</span>
-        </div>
-      </div>
-      <button class="qualify-btn" onclick="manualQualify('${p.id}')">تأهيل</button>
-    </div>
-  `).join('');
-}
+        function watchMatch(matchId) {
+            currentMatchId = matchId;
+            document.getElementById('match-modal').style.display = 'flex';
+            socket.emit('watch-match', matchId);
+        }
 
-function updateBracket(t) {
-  if (!t.rounds.length) return;
-  const container = document.getElementById('bracket-container');
-  const wrapper = document.createElement('div');
-  wrapper.className = 'bracket-wrapper';
+        function closeMatch() {
+            document.getElementById('match-modal').style.display = 'none';
+            currentMatchId = null;
+        }
 
-  t.rounds.forEach(round => {
-    const roundEl = document.createElement('div');
-    roundEl.className = 'bracket-round';
-    
-    const titleEl = document.createElement('div');
-    titleEl.className = 'round-title';
-    titleEl.textContent = round.name;
-    roundEl.appendChild(titleEl);
+        function updateModal(match) {
+            document.getElementById('match-title').innerText = `${match.players[0].name} ضد ${match.players[1].name}`;
+            document.getElementById('match-status').innerText = match.status === 'active' ? `دور: ${match.players[match.turn].name}` : 'انتهت';
+            
+            const grid = document.getElementById('modal-xo');
+            grid.innerHTML = '';
+            match.board.forEach((cell, i) => {
+                const div = document.createElement('div');
+                div.className = `xo-cell ${cell || ''}`;
+                div.innerText = cell || '';
+                grid.appendChild(div);
+            });
 
-    // Space matches vertically for bracket feel
-    const matchCount = round.matches.length;
-    const maxMatches = t.rounds[0]?.matches.length || matchCount;
-    const spacer = Math.floor((maxMatches / matchCount - 1) * 80);
+            document.getElementById('q-text').innerText = match.currentQuestion.q;
+            const opts = document.getElementById('q-options');
+            opts.innerHTML = '';
+            match.currentQuestion.options.forEach((opt, i) => {
+                const div = document.createElement('div');
+                div.className = 'option';
+                if (i === match.currentQuestion.correct) div.style.borderColor = 'var(--success)';
+                div.innerText = opt;
+                opts.appendChild(div);
+            });
+        }
 
-    round.matches.forEach((bm, i) => {
-      if (i > 0) {
-        const sp = document.createElement('div');
-        sp.style.height = spacer + 'px';
-        roundEl.appendChild(sp);
-      }
+        function manualQualify(idx) {
+            if (!currentMatchId) return;
+            // We need to find the player ID
+            socket.emit('watch-match', currentMatchId); // Ensure we have latest
+            // This is a bit simplified, in real app we'd track this better
+            // For now, let's just emit with a placeholder and let server handle
+            // Actually, let's just use the match update we just got
+        }
+        
+        // Overriding manualQualify to be more robust
+        socket.on('match-update', (match) => {
+            if (currentMatchId === match.id) {
+                window.lastMatchData = match;
+            }
+        });
 
-      const matchEl = document.createElement('div');
-      matchEl.className = `bracket-match ${bm.status}`;
-      matchEl.onclick = () => openMatchViewer(bm.id, bm);
+        function manualQualify(idx) {
+            if (window.lastMatchData) {
+                socket.emit('qualify-player', { 
+                    tournamentId: currentTournament.id, 
+                    playerId: window.lastMatchData.players[idx].id 
+                });
+                closeMatch();
+            }
+        }
 
-      const p1name = bm.player1?.name || '؟';
-      const p2name = bm.player2?.name || '؟';
-      const p1win = bm.winner?.id === bm.player1?.id;
-      const p2win = bm.winner?.id === bm.player2?.id;
-
-      matchEl.innerHTML = `
-        <div class="bm-player ${p1win ? 'winner' : (bm.status === 'finished' && !p1win ? 'loser' : '')}">
-          <span class="bm-symbol x">X</span>
-          ${p1name}
-          ${p1win ? '<span class="trophy">🏆</span>' : ''}
-        </div>
-        <div class="bm-player ${p2win ? 'winner' : (bm.status === 'finished' && !p2win ? 'loser' : '')}">
-          <span class="bm-symbol o">O</span>
-          ${p2name}
-          ${p2win ? '<span class="trophy">🏆</span>' : ''}
-        </div>
-      `;
-      roundEl.appendChild(matchEl);
-    });
-
-    wrapper.appendChild(roundEl);
-  });
-
-  container.innerHTML = '';
-  container.appendChild(wrapper);
-}
-
-// ─── Match Viewer ─────────────────────────────────────────────────────────────
-function initBoardCells() {
-  const board = document.getElementById('mv-board');
-  board.innerHTML = '';
-  for (let i = 0; i < 9; i++) {
-    const cell = document.createElement('div');
-    cell.className = 'xo-cell';
-    cell.id = 'mv-cell-' + i;
-    board.appendChild(cell);
-  }
-}
-
-function openMatchViewer(matchId, bm) {
-  if (!matchId) return;
-  const viewer = document.getElementById('match-viewer');
-  viewer.classList.add('visible');
-  viewingMatch = matchId;
-  currentMatchId = matchId;
-
-  // Join match room
-  socket.emit('watch-match', { matchId });
-
-  // Set player names from bracket
-  if (bm) {
-    document.getElementById('mv-p1-name').textContent = bm.player1?.name || '-';
-    document.getElementById('mv-p2-name').textContent = bm.player2?.name || '-';
-    document.getElementById('mv-restart-btn').dataset.matchId = matchId;
-    document.getElementById('mv-qualify-p1').dataset.playerId = bm.player1?.id || '';
-    document.getElementById('mv-qualify-p2').dataset.playerId = bm.player2?.id || '';
-  }
-
-  // Reset overlay
-  document.getElementById('match-result-overlay').classList.remove('visible');
-  clearBoard();
-}
-
-function closeMatchViewer() {
-  document.getElementById('match-viewer').classList.remove('visible');
-  viewingMatch = null;
-}
-
-function updateMatchViewer(m) {
-  document.getElementById('mv-p1-name').textContent = m.player1?.name || '-';
-  document.getElementById('mv-p2-name').textContent = m.player2?.name || '-';
-
-  // Active turn
-  document.getElementById('mv-p1').classList.toggle('active-turn', m.currentTurn === m.player1?.id);
-  document.getElementById('mv-p2').classList.toggle('active-turn', m.currentTurn === m.player2?.id);
-
-  // Board
-  m.board.forEach((val, i) => {
-    const cell = document.getElementById('mv-cell-' + i);
-    if (!cell) return;
-    if (val && !cell.textContent) {
-      cell.textContent = val;
-      cell.className = 'xo-cell ' + (val === 'X' ? 'x-cell' : 'o-cell') + ' xo-cell-appear';
-      setTimeout(() => cell.classList.remove('xo-cell-appear'), 400);
-    }
-  });
-
-  // Question
-  if (m.currentQuestion) {
-    document.getElementById('mv-q-text').textContent = m.currentQuestion.q;
-    const optEls = m.currentQuestion.options.map((o, i) => `
-      <div class="mv-option">
-        <span class="mv-option-label">${['أ','ب','ج','د'][i]}</span> ${o}
-        ${i === m.currentQuestion.answer ? '<span style="color:var(--green);margin-right:auto;">✓</span>' : ''}
-      </div>
-    `).join('');
-    document.getElementById('mv-q-options').innerHTML = optEls;
-  }
-
-  if (m.status === 'finished') {
-    document.getElementById('match-result-overlay').classList.add('visible');
-  }
-}
-
-function clearBoard() {
-  for (let i = 0; i < 9; i++) {
-    const cell = document.getElementById('mv-cell-' + i);
-    if (cell) { cell.textContent = ''; cell.className = 'xo-cell'; }
-  }
-  document.getElementById('mv-q-text').textContent = '-';
-  document.getElementById('mv-q-options').innerHTML = '';
-}
-
-function highlightWinLine(line) {
-  if (!line) return;
-  line.forEach(i => {
-    const cell = document.getElementById('mv-cell-' + i);
-    if (cell) cell.classList.add('win-cell');
-  });
-}
-
-// ─── Host Actions ─────────────────────────────────────────────────────────────
-function startTournament() {
-  socket.emit('start-tournament', { code: currentCode });
-  document.getElementById('start-btn').disabled = true;
-  document.getElementById('start-btn').textContent = '⏳ جارٍ البدء...';
-}
-
-function manualQualify(playerId) {
-  socket.emit('qualify-player', { code: currentCode, playerId });
-}
-
-function hostRestartMatch() {
-  if (!currentMatchId) return;
-  socket.emit('restart-match', { code: currentCode, matchId: currentMatchId });
-  clearBoard();
-}
-
-function hostQualifyPlayer(playerNum) {
-  const btn = document.getElementById('mv-qualify-p' + playerNum);
-  const playerId = btn.dataset.playerId;
-  if (!playerId) return;
-  socket.emit('qualify-player', { code: currentCode, playerId });
-}
-
-// ─── Event Feed ───────────────────────────────────────────────────────────────
-function appendEvent(ev) {
-  const feed = document.getElementById('event-feed');
-  const item = document.createElement('div');
-  item.className = 'event-item ' + (ev.type || 'info');
-  const time = new Date(ev.time).toLocaleTimeString('ar', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-  item.innerHTML = `<span class="event-time">${time}</span><span>${ev.text}</span>`;
-  feed.insertBefore(item, feed.firstChild);
-  // Keep max 50
-  while (feed.children.length > 50) feed.removeChild(feed.lastChild);
-}
-
-// ─── Utilities ────────────────────────────────────────────────────────────────
-function copyCode() {
-  navigator.clipboard?.writeText(currentCode).then(() => showNotif('تم نسخ الرمز!'));
-  playBeep(660, 'sine', 0.1);
-}
-function copyLink() {
-  const link = document.getElementById('invite-link').value;
-  navigator.clipboard?.writeText(link).then(() => showNotif('تم نسخ الرابط!'));
-}
-
-let notifTimer;
-function showNotif(msg) {
-  clearTimeout(notifTimer);
-  let n = document.querySelector('.notif');
-  if (!n) { n = document.createElement('div'); n.className = 'notif'; document.body.appendChild(n); }
-  n.textContent = msg; n.style.display = 'block';
-  notifTimer = setTimeout(() => { if (n) n.style.display = 'none'; }, 3000);
-}
-
-socket.on('error', (msg) => showNotif('⚠️ ' + msg));
-socket.on('tournament-finished', ({ winner }) => {
-  showNotif('🏆 انتهت البطولة! الفائز: ' + (winner?.name || '-'));
-  playBeep(1047, 'triangle', 1.5, 0.5);
-  setTimeout(() => playBeep(1319, 'triangle', 1.0, 0.4), 300);
-  setTimeout(() => playBeep(1568, 'triangle', 1.2, 0.5), 600);
-});
+        function forceRestart() {
+            if (currentMatchId) {
+                socket.emit('restart-match', currentMatchId);
+            }
+        }
 </script>
 </body>
 </html>

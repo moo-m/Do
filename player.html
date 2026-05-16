@@ -1,0 +1,789 @@
+<!DOCTYPE html>
+
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>لاعب – بطولة XO العربية</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&family=Rajdhani:wght@500;700&display=swap');
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+–bg: #050818;
+–bg2: #080d20;
+–bg3: #0d1530;
+–card: #0f1a35;
+–border: #1a2d5a;
+–gold: #f0c040;
+–gold2: #ffd700;
+–cyan: #00e5ff;
+–purple: #9c27b0;
+–purple2: #ce93d8;
+–blue: #1565c0;
+–blue2: #42a5f5;
+–green: #00e676;
+–red: #ff1744;
+–orange: #ff9800;
+–text: #e8eaf6;
+–text2: #90a4ae;
+}
+
+html, body { height: 100%; font-family: ‘Cairo’, sans-serif; background: var(–bg); color: var(–text); overflow-x: hidden; }
+
+body::before {
+content: ‘’;
+position: fixed; inset: 0;
+background:
+radial-gradient(ellipse at 30% 40%, rgba(21,101,192,0.1) 0%, transparent 60%),
+radial-gradient(ellipse at 70% 70%, rgba(156,39,176,0.1) 0%, transparent 60%);
+pointer-events: none;
+}
+body::after {
+content: ‘’;
+position: fixed; inset: 0;
+background-image:
+linear-gradient(rgba(26,45,90,0.25) 1px, transparent 1px),
+linear-gradient(90deg, rgba(26,45,90,0.25) 1px, transparent 1px);
+background-size: 40px 40px;
+pointer-events: none;
+}
+
+- { position: relative; z-index: 1; }
+
+/* ─── SCREENS ─── */
+.screen { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 1rem; }
+.screen.hidden { display: none; }
+
+/* Join Screen */
+.join-card {
+background: var(–card); border: 1px solid var(–border);
+border-radius: 20px; padding: 2.5rem; width: 100%; max-width: 420px;
+box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+animation: card-in 0.5s ease;
+}
+@keyframes card-in { from{opacity:0;transform:translateY(30px);} to{opacity:1;transform:translateY(0);} }
+
+.logo {
+font-family: ‘Rajdhani’, sans-serif; font-size: 2rem; font-weight: 700;
+background: linear-gradient(135deg, var(–gold), var(–cyan));
+-webkit-background-clip: text; -webkit-text-fill-color: transparent;
+text-align: center; margin-bottom: 0.3rem; letter-spacing: 2px;
+filter: drop-shadow(0 0 15px rgba(240,192,64,0.4));
+}
+.logo-sub { color: var(–text2); text-align: center; font-size: 0.9rem; margin-bottom: 2rem; }
+
+.input-group { margin-bottom: 1.2rem; }
+.input-group label { display: block; color: var(–text2); font-size: 0.9rem; margin-bottom: 0.4rem; }
+.input-group input {
+width: 100%; padding: 0.9rem 1rem;
+background: var(–bg3); border: 1px solid var(–border);
+border-radius: 12px; color: var(–text); font-family: ‘Cairo’, sans-serif;
+font-size: 1rem; outline: none; direction: rtl; letter-spacing: 1px;
+transition: border-color 0.3s, box-shadow 0.3s;
+}
+.input-group input:focus { border-color: var(–cyan); box-shadow: 0 0 15px rgba(0,229,255,0.2); }
+.input-group input#code-input { font-family: ‘Rajdhani’, sans-serif; font-size: 1.4rem; font-weight: 700; letter-spacing: 4px; text-align: center; color: var(–gold); }
+
+.btn {
+padding: 1rem 2rem; border: none; border-radius: 12px;
+font-family: ‘Cairo’, sans-serif; font-size: 1.1rem; font-weight: 700;
+cursor: pointer; transition: all 0.3s; width: 100%;
+}
+.btn-cyan { background: linear-gradient(135deg, #006064, #00e5ff); color: #000; box-shadow: 0 4px 20px rgba(0,229,255,0.3); }
+.btn-cyan:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(0,229,255,0.5); }
+.btn-gold { background: linear-gradient(135deg, #7b5e00, #f0c040); color: #000; box-shadow: 0 4px 20px rgba(240,192,64,0.3); }
+.btn-gold:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(240,192,64,0.5); }
+.btn-green { background: linear-gradient(135deg, #004d1a, #00e676); color: #000; box-shadow: 0 4px 20px rgba(0,230,118,0.3); }
+.btn-green:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(0,230,118,0.5); }
+.btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none !important; }
+
+.error-msg { color: var(–red); font-size: 0.9rem; text-align: center; margin-top: 0.8rem; display: none; }
+.error-msg.visible { display: block; animation: shake 0.4s ease; }
+@keyframes shake { 0%,100%{transform:translateX(0);} 25%{transform:translateX(-8px);} 75%{transform:translateX(8px);} }
+
+/* ─── WAITING ROOM ─── */
+.waiting-card {
+background: var(–card); border: 1px solid var(–border);
+border-radius: 20px; padding: 2.5rem; width: 100%; max-width: 480px;
+text-align: center; box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+animation: card-in 0.5s ease;
+}
+.waiting-avatar {
+width: 80px; height: 80px; border-radius: 50%; margin: 0 auto 1rem;
+background: linear-gradient(135deg, var(–blue), var(–purple));
+display: flex; align-items: center; justify-content: center;
+font-size: 2rem; font-weight: 900;
+box-shadow: 0 0 30px rgba(21,101,192,0.5);
+animation: avatar-float 3s ease-in-out infinite;
+}
+@keyframes avatar-float { 0%,100%{transform:translateY(0);} 50%{transform:translateY(-8px);} }
+
+.waiting-name { font-size: 1.5rem; font-weight: 900; color: var(–cyan); margin-bottom: 0.3rem; }
+.waiting-code { color: var(–text2); font-size: 0.9rem; margin-bottom: 2rem; }
+.waiting-code span { color: var(–gold); font-family: ‘Rajdhani’, sans-serif; font-weight: 700; font-size: 1.1rem; }
+
+.pulse-ring {
+width: 60px; height: 60px; border-radius: 50%; margin: 0 auto 1.5rem;
+border: 3px solid var(–cyan); animation: pulse-ring 1.5s ease-in-out infinite;
+display: flex; align-items: center; justify-content: center;
+font-size: 1.5rem;
+}
+@keyframes pulse-ring {
+0%{ box-shadow: 0 0 0 0 rgba(0,229,255,0.6); }
+70%{ box-shadow: 0 0 0 25px rgba(0,229,255,0); }
+100%{ box-shadow: 0 0 0 0 rgba(0,229,255,0); }
+}
+
+.waiting-status { color: var(–text2); font-size: 0.95rem; line-height: 1.8; }
+
+.opponent-info {
+background: var(–bg3); border: 1px solid var(–cyan);
+border-radius: 12px; padding: 1rem; margin-top: 1.5rem;
+box-shadow: 0 0 20px rgba(0,229,255,0.2);
+display: none;
+}
+.opponent-info.visible { display: block; animation: card-in 0.4s ease; }
+.opponent-label { color: var(–text2); font-size: 0.8rem; margin-bottom: 0.3rem; }
+.opponent-name { font-size: 1.2rem; font-weight: 700; color: var(–gold); }
+
+/* ─── MATCH SCREEN ─── */
+#match-screen {
+min-height: 100vh; padding: 1rem;
+display: none; flex-direction: column; align-items: center;
+}
+#match-screen.active { display: flex; }
+
+.match-header {
+width: 100%; max-width: 560px;
+display: flex; justify-content: space-between; align-items: center;
+padding: 0.8rem; margin-bottom: 1rem;
+}
+.match-logo { font-family: ‘Rajdhani’, sans-serif; font-size: 1.2rem; font-weight: 700; color: var(–gold); }
+
+.players-bar {
+width: 100%; max-width: 560px;
+display: flex; gap: 1rem; align-items: center;
+margin-bottom: 1.5rem;
+}
+.player-card {
+flex: 1; background: var(–card); border: 2px solid var(–border);
+border-radius: 14px; padding: 0.8rem 1rem; text-align: center;
+transition: all 0.4s;
+}
+.player-card.my-card { border-color: var(–cyan); }
+.player-card.active-card {
+border-color: var(–gold);
+background: rgba(240,192,64,0.08);
+box-shadow: 0 0 25px rgba(240,192,64,0.3);
+transform: scale(1.02);
+}
+.player-card.active-card.my-card {
+border-color: var(–cyan);
+background: rgba(0,229,255,0.08);
+box-shadow: 0 0 25px rgba(0,229,255,0.3);
+}
+.pc-symbol { font-family: ‘Rajdhani’, sans-serif; font-size: 2rem; font-weight: 700; }
+.pc-symbol.x { color: var(–cyan); }
+.pc-symbol.o { color: var(–gold); }
+.pc-name { font-weight: 700; font-size: 0.95rem; }
+.pc-me { font-size: 0.75rem; color: var(–cyan); }
+.vs-badge {
+background: var(–bg3); border: 1px solid var(–border);
+border-radius: 8px; padding: 0.4rem 0.7rem;
+font-family: ‘Rajdhani’, sans-serif; font-weight: 700; color: var(–text2);
+}
+
+/* XO Board */
+.board-container { margin-bottom: 1.5rem; }
+.board-title {
+text-align: center; color: var(–text2); font-size: 0.85rem;
+margin-bottom: 0.8rem;
+}
+.board-title .can-play { color: var(–green); font-weight: 700; }
+.board-title .wait { color: var(–orange); }
+.board-title .answer-first { color: var(–purple2); }
+
+.xo-board {
+display: grid; grid-template-columns: repeat(3, 100px);
+gap: 8px; margin: 0 auto;
+}
+@media (max-width: 400px) { .xo-board { grid-template-columns: repeat(3, 80px); } }
+
+.xo-cell {
+width: 100px; height: 100px;
+background: var(–bg3); border: 2px solid var(–border);
+border-radius: 14px; display: flex; align-items: center; justify-content: center;
+font-family: ‘Rajdhani’, sans-serif; font-size: 3rem; font-weight: 700;
+cursor: default; transition: all 0.3s; user-select: none;
+position: relative; overflow: hidden;
+}
+@media (max-width: 400px) { .xo-cell { width: 80px; height: 80px; font-size: 2.4rem; } }
+
+.xo-cell.clickable {
+cursor: pointer;
+border-color: var(–cyan);
+box-shadow: 0 0 20px rgba(0,229,255,0.2);
+animation: cell-pulse 1s infinite;
+}
+@keyframes cell-pulse { 0%,100%{box-shadow:0 0 10px rgba(0,229,255,0.2);} 50%{box-shadow:0 0 25px rgba(0,229,255,0.5);} }
+
+.xo-cell.clickable:hover { background: rgba(0,229,255,0.1); transform: scale(1.05); }
+.xo-cell.x-cell { color: var(–cyan); border-color: rgba(0,229,255,0.4); background: rgba(0,229,255,0.05); }
+.xo-cell.o-cell { color: var(–gold); border-color: rgba(240,192,64,0.4); background: rgba(240,192,64,0.05); }
+.xo-cell.win-cell { animation: win-flash 0.8s ease-in-out infinite alternate; }
+@keyframes win-flash {
+from { box-shadow: inset 0 0 20px rgba(0,230,118,0.4); border-color: var(–green); }
+to   { box-shadow: inset 0 0 50px rgba(0,230,118,0.8); border-color: var(–green); }
+}
+.cell-appear { animation: cell-pop 0.35s cubic-bezier(0.34,1.56,0.64,1); }
+@keyframes cell-pop { from{transform:scale(0) rotate(-10deg);} to{transform:scale(1) rotate(0);} }
+
+/* ─── QUESTION PANEL ─── */
+.question-panel {
+width: 100%; max-width: 560px;
+background: var(–card); border: 2px solid var(–purple);
+border-radius: 16px; overflow: hidden;
+box-shadow: 0 0 25px rgba(156,39,176,0.3);
+margin-bottom: 1rem;
+}
+.qp-header {
+background: linear-gradient(135deg, rgba(74,20,140,0.8), rgba(156,39,176,0.3));
+padding: 0.8rem 1.2rem;
+display: flex; align-items: center; gap: 0.5rem;
+border-bottom: 1px solid rgba(156,39,176,0.3);
+}
+.qp-icon { font-size: 1.2rem; }
+.qp-label { font-weight: 700; font-size: 0.9rem; color: var(–purple2); }
+.qp-turn { margin-right: auto; font-size: 0.8rem; color: var(–text2); }
+
+.qp-body { padding: 1.2rem; }
+.question-text {
+font-size: 1.1rem; font-weight: 600; line-height: 1.7;
+color: var(–text); margin-bottom: 1.2rem;
+animation: q-appear 0.4s ease;
+min-height: 60px;
+}
+@keyframes q-appear { from{opacity:0;transform:translateY(10px);} to{opacity:1;transform:translateY(0);} }
+
+.options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem; }
+.option-btn {
+padding: 0.7rem 0.8rem;
+background: var(–bg3); border: 1.5px solid var(–border);
+border-radius: 10px; cursor: pointer;
+font-family: ‘Cairo’, sans-serif; font-size: 0.9rem; color: var(–text);
+display: flex; align-items: center; gap: 0.5rem; direction: rtl;
+transition: all 0.25s; text-align: right;
+}
+.option-btn:hover:not(:disabled) { border-color: var(–purple2); background: rgba(156,39,176,0.1); transform: translateY(-2px); }
+.option-btn:disabled { cursor: not-allowed; }
+.option-btn.correct-ans { border-color: var(–green); background: rgba(0,230,118,0.15); color: var(–green); }
+.option-btn.wrong-ans { border-color: var(–red); background: rgba(255,23,68,0.1); color: var(–red); }
+.option-label {
+width: 24px; height: 24px; border-radius: 50%; flex-shrink: 0;
+background: var(–border); display: flex; align-items: center; justify-content: center;
+font-weight: 700; font-size: 0.8rem; font-family: ‘Rajdhani’, sans-serif;
+transition: all 0.25s;
+}
+.option-btn:hover:not(:disabled) .option-label { background: var(–purple); color: #fff; }
+.option-btn.correct-ans .option-label { background: var(–green); color: #000; }
+.option-btn.wrong-ans .option-label { background: var(–red); color: #fff; }
+
+/* Answer feedback */
+.answer-feedback {
+margin-top: 0.8rem; padding: 0.7rem 1rem;
+border-radius: 10px; font-weight: 700; text-align: center;
+display: none; animation: feedback-in 0.3s ease;
+}
+@keyframes feedback-in { from{opacity:0;transform:scale(0.9);} to{opacity:1;transform:scale(1);} }
+.answer-feedback.correct { display: block; background: rgba(0,230,118,0.15); border: 1px solid var(–green); color: var(–green); }
+.answer-feedback.wrong { display: block; background: rgba(255,23,68,0.1); border: 1px solid var(–red); color: var(–red); }
+
+/* Waiting to answer */
+.not-my-turn {
+padding: 0.7rem 1rem; background: var(–bg3);
+border: 1px solid var(–border); border-radius: 10px;
+color: var(–text2); text-align: center; font-size: 0.9rem;
+}
+
+/* ─── RESULT SCREEN ─── */
+.result-card {
+background: var(–card); border: 1px solid var(–border);
+border-radius: 20px; padding: 3rem 2.5rem; width: 100%; max-width: 420px;
+text-align: center; box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+animation: card-in 0.6s ease;
+}
+.result-emoji { font-size: 5rem; display: block; margin-bottom: 1rem; animation: trophy-bounce 0.8s ease; }
+@keyframes trophy-bounce { 0%{transform:scale(0);} 60%{transform:scale(1.2);} 100%{transform:scale(1);} }
+.result-title { font-size: 2rem; font-weight: 900; margin-bottom: 0.5rem; }
+.result-title.win { color: var(–gold); }
+.result-title.lose { color: var(–text2); }
+.result-subtitle { color: var(–text2); font-size: 1rem; margin-bottom: 2rem; }
+
+/* Events mini feed */
+.mini-feed {
+width: 100%; max-width: 560px;
+background: var(–card); border: 1px solid var(–border);
+border-radius: 12px; padding: 0.8rem; max-height: 120px; overflow-y: auto;
+margin-bottom: 1rem;
+}
+.mini-event { font-size: 0.8rem; padding: 0.3rem 0; border-bottom: 1px solid rgba(26,45,90,0.5); color: var(–text2); }
+.mini-event.correct { color: var(–green); }
+.mini-event.wrong { color: var(–red); }
+.mini-event.move { color: var(–blue2); }
+.mini-event.qualify { color: var(–gold); }
+
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-thumb { background: var(–border); border-radius: 2px; }
+</style>
+
+</head>
+<body>
+
+<!-- ─── JOIN SCREEN ─── -->
+
+<div id="join-screen" class="screen">
+  <div class="join-card">
+    <div class="logo">🎮 XO ARENA</div>
+    <div class="logo-sub">بطولة XO التعليمية العربية</div>
+    <div class="input-group">
+      <label>اسمك في البطولة</label>
+      <input type="text" id="player-name" placeholder="أدخل اسمك" maxlength="20">
+    </div>
+    <div class="input-group">
+      <label>رمز البطولة</label>
+      <input type="text" id="code-input" placeholder="XXXXXX" maxlength="6" style="text-transform:uppercase;" oninput="this.value=this.value.toUpperCase()">
+    </div>
+    <button class="btn btn-cyan" onclick="joinTournament()">🚀 الانضمام إلى البطولة</button>
+    <div class="error-msg" id="error-msg"></div>
+  </div>
+</div>
+
+<!-- ─── WAITING SCREEN ─── -->
+
+<div id="waiting-screen" class="screen hidden">
+  <div class="waiting-card">
+    <div class="waiting-avatar" id="wait-avatar">?</div>
+    <div class="waiting-name" id="wait-name">-</div>
+    <div class="waiting-code">رمز البطولة: <span id="wait-code">-</span></div>
+    <div class="pulse-ring">⏳</div>
+    <div class="waiting-status" id="wait-status">في انتظار بدء البطولة...</div>
+    <div class="opponent-info" id="opponent-info">
+      <div class="opponent-label">خصمك القادم</div>
+      <div class="opponent-name" id="opponent-name">-</div>
+    </div>
+  </div>
+</div>
+
+<!-- ─── MATCH SCREEN ─── -->
+
+<div id="match-screen">
+
+  <div class="match-header">
+    <div class="match-logo">⚡ XO ARABIC</div>
+    <div style="color:var(--text2);font-size:0.85rem;" id="match-round-label">-</div>
+  </div>
+
+  <div class="players-bar" id="players-bar">
+    <div class="player-card my-card" id="pc-me">
+      <div class="pc-symbol x" id="pc-me-symbol">X</div>
+      <div class="pc-name" id="pc-me-name">أنا</div>
+      <div class="pc-me">أنت</div>
+    </div>
+    <div class="vs-badge">VS</div>
+    <div class="player-card" id="pc-opp">
+      <div class="pc-symbol o" id="pc-opp-symbol">O</div>
+      <div class="pc-name" id="pc-opp-name">الخصم</div>
+    </div>
+  </div>
+
+  <div class="board-container">
+    <div class="board-title" id="board-title">
+      <span class="wait">انتظر دورك...</span>
+    </div>
+    <div class="xo-board" id="xo-board"></div>
+  </div>
+
+  <div class="question-panel" id="question-panel">
+    <div class="qp-header">
+      <span class="qp-icon">📚</span>
+      <span class="qp-label">سؤال النحو والصرف</span>
+      <span class="qp-turn" id="qp-turn-label">-</span>
+    </div>
+    <div class="qp-body">
+      <div class="question-text" id="question-text">جارٍ تحميل السؤال...</div>
+      <div id="options-area">
+        <div class="options-grid" id="options-grid"></div>
+        <div class="answer-feedback" id="answer-feedback"></div>
+      </div>
+      <div class="not-my-turn hidden" id="not-my-turn">ليس دورك الآن — انتظر خصمك</div>
+    </div>
+  </div>
+
+  <div class="mini-feed" id="mini-feed"></div>
+
+</div>
+
+<!-- ─── RESULT SCREEN ─── -->
+
+<div id="result-screen" class="screen hidden">
+  <div class="result-card">
+    <span class="result-emoji" id="result-emoji">🏆</span>
+    <div class="result-title" id="result-title">فزت!</div>
+    <div class="result-subtitle" id="result-subtitle">أحسنت! تأهلت للجولة القادمة.</div>
+    <button class="btn btn-gold" onclick="goWaiting()">⏳ انتظار الجولة القادمة</button>
+  </div>
+</div>
+
+<script src="/socket.io/socket.io.js"></script>
+
+<script>
+const socket = io();
+let myId = null;
+let myName = '';
+let mySymbol = 'X';
+let tournamentCode = '';
+let currentMatch = null;
+let canMove = false;
+let answeredCorrectly = false;
+let feedbackTimeout = null;
+
+// Prefill code from URL
+const urlCode = new URLSearchParams(location.search).get('code');
+if (urlCode) document.getElementById('code-input').value = urlCode.toUpperCase();
+
+// ─── Audio ────────────────────────────────────────────────────────────────────
+const AudioCtx = window.AudioContext || window.webkitAudioContext;
+let ctx;
+function initAudio() { if (!ctx) ctx = new AudioCtx(); }
+function playTone(freq=440, type='sine', dur=0.2, vol=0.3) {
+  try {
+    if (!ctx) return;
+    const o = ctx.createOscillator(), g = ctx.createGain();
+    o.connect(g); g.connect(ctx.destination);
+    o.type = type; o.frequency.value = freq;
+    g.gain.setValueAtTime(vol, ctx.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + dur);
+    o.start(); o.stop(ctx.currentTime + dur);
+  } catch(e){}
+}
+function playCorrect() { playTone(660,'sine',0.15); setTimeout(()=>playTone(880,'sine',0.2),150); }
+function playWrong() { playTone(200,'sawtooth',0.3,0.4); }
+function playMove() { playTone(440,'sine',0.1,0.2); }
+function playWin() {
+  [523,659,784,1047].forEach((f,i)=>setTimeout(()=>playTone(f,'triangle',0.5,0.5),i*200));
+}
+function playLose() { playTone(220,'sawtooth',0.8,0.3); }
+
+document.addEventListener('click', initAudio, { once: true });
+
+// ─── Join ─────────────────────────────────────────────────────────────────────
+function joinTournament() {
+  const name = document.getElementById('player-name').value.trim();
+  const code = document.getElementById('code-input').value.trim().toUpperCase();
+  if (!name) return showError('أدخل اسمك');
+  if (!code || code.length < 4) return showError('أدخل رمز البطولة');
+  myName = name;
+  tournamentCode = code;
+  socket.emit('join-tournament', { code, name });
+}
+
+function showError(msg) {
+  const el = document.getElementById('error-msg');
+  el.textContent = msg; el.classList.add('visible');
+  setTimeout(() => el.classList.remove('visible'), 3000);
+}
+
+socket.on('join-error', (msg) => showError(msg));
+
+socket.on('join-success', ({ code, name, playerId }) => {
+  myId = playerId;
+  myName = name;
+  tournamentCode = code;
+  showScreen('waiting-screen');
+  document.getElementById('wait-avatar').textContent = name.charAt(0);
+  document.getElementById('wait-name').textContent = name;
+  document.getElementById('wait-code').textContent = code;
+  playTone(660,'sine',0.3);
+});
+
+// ─── Tournament updates ────────────────────────────────────────────────────────
+socket.on('tournament-update', (t) => {
+  // Find my match in current round
+  const round = t.rounds[t.currentRound];
+  if (!round) return;
+
+  const myBM = round.matches.find(bm =>
+    bm.player1?.id === myId || bm.player2?.id === myId
+  );
+  if (myBM) {
+    const oppPlayer = myBM.player1?.id === myId ? myBM.player2 : myBM.player1;
+    const oppEl = document.getElementById('opponent-info');
+    const oppName = document.getElementById('opponent-name');
+    if (oppPlayer) { oppEl.classList.add('visible'); oppName.textContent = oppPlayer.name; }
+  }
+
+  document.getElementById('wait-status').textContent =
+    t.status === 'lobby' ? 'في انتظار بدء البطولة...' :
+    t.status === 'active' ? 'البطولة جارية — انتظر مباراتك...' :
+    'انتهت البطولة';
+
+  document.getElementById('match-round-label').textContent = round.name || '';
+});
+
+// ─── Match Started ─────────────────────────────────────────────────────────────
+socket.on('match-started', (m) => {
+  currentMatch = m;
+  showScreen('match-screen');
+  document.getElementById('match-screen').classList.add('active');
+  initBoard();
+  updateMatch(m);
+  playTone(880,'sine',0.4);
+});
+
+socket.on('match-update', (m) => {
+  currentMatch = m;
+  updateMatch(m);
+});
+
+function updateMatch(m) {
+  const isP1 = m.player1.id === myId;
+  mySymbol = isP1 ? 'X' : 'O';
+  const opp = isP1 ? m.player2 : m.player1;
+
+  // Player cards
+  document.getElementById('pc-me-symbol').textContent = mySymbol;
+  document.getElementById('pc-me-symbol').className = 'pc-symbol ' + mySymbol.toLowerCase();
+  document.getElementById('pc-me-name').textContent = myName;
+  document.getElementById('pc-opp-symbol').textContent = mySymbol === 'X' ? 'O' : 'X';
+  document.getElementById('pc-opp-symbol').className = 'pc-symbol ' + (mySymbol === 'X' ? 'o' : 'x');
+  document.getElementById('pc-opp-name').textContent = opp.name;
+
+  const isMyTurn = m.currentTurn === myId;
+  const canPlace = m.pendingMove === myId;
+
+  document.getElementById('pc-me').classList.toggle('active-card', isMyTurn || canPlace);
+  document.getElementById('pc-opp').classList.toggle('active-card', !isMyTurn && !canPlace);
+
+  // Board
+  m.board.forEach((val, i) => {
+    const cell = document.getElementById('cell-' + i);
+    if (!cell) return;
+    if (val && !cell.dataset.filled) {
+      cell.textContent = val;
+      cell.dataset.filled = '1';
+      cell.className = 'xo-cell ' + (val === 'X' ? 'x-cell' : 'o-cell') + ' cell-appear';
+      setTimeout(() => cell.classList.remove('cell-appear'), 400);
+      playMove();
+    }
+  });
+
+  // Board title & clickability
+  canMove = canPlace;
+  const titleEl = document.getElementById('board-title');
+
+  if (m.status === 'finished') {
+    titleEl.innerHTML = '<span style="color:var(--text2)">انتهت المباراة</span>';
+    setAllCellsUnclickable();
+    return;
+  }
+
+  if (canPlace) {
+    titleEl.innerHTML = '<span class="can-play">✅ أجبت بشكل صحيح — اختر خانة!</span>';
+    setEmptyCellsClickable();
+  } else if (isMyTurn) {
+    titleEl.innerHTML = '<span class="answer-first">📚 أجب على السؤال لتلعب</span>';
+    setAllCellsUnclickable();
+  } else {
+    titleEl.innerHTML = '<span class="wait">⏳ انتظر دور خصمك...</span>';
+    setAllCellsUnclickable();
+  }
+
+  // Question
+  if (m.currentQuestion) {
+    updateQuestion(m.currentQuestion, isMyTurn && !canPlace);
+  }
+
+  document.getElementById('qp-turn-label').textContent = isMyTurn ? 'دورك' : 'دور الخصم';
+}
+
+function initBoard() {
+  const board = document.getElementById('xo-board');
+  board.innerHTML = '';
+  for (let i = 0; i < 9; i++) {
+    const cell = document.createElement('div');
+    cell.className = 'xo-cell';
+    cell.id = 'cell-' + i;
+    cell.dataset.index = i;
+    cell.onclick = () => makeMove(i);
+    board.appendChild(cell);
+  }
+}
+
+function makeMove(cellIndex) {
+  if (!canMove || !currentMatch) return;
+  const cell = document.getElementById('cell-' + cellIndex);
+  if (cell.dataset.filled) return;
+  socket.emit('make-move', { matchId: currentMatch.id, cellIndex });
+  canMove = false;
+}
+
+function setEmptyCellsClickable() {
+  for (let i = 0; i < 9; i++) {
+    const cell = document.getElementById('cell-' + i);
+    if (!cell) continue;
+    if (!cell.dataset.filled) {
+      cell.classList.add('clickable');
+    } else {
+      cell.classList.remove('clickable');
+    }
+  }
+}
+
+function setAllCellsUnclickable() {
+  for (let i = 0; i < 9; i++) {
+    const cell = document.getElementById('cell-' + i);
+    if (cell) cell.classList.remove('clickable');
+  }
+}
+
+// ─── Questions ────────────────────────────────────────────────────────────────
+function updateQuestion(q, isMyTurn) {
+  document.getElementById('question-text').textContent = q.q;
+  const labels = ['أ', 'ب', 'ج', 'د'];
+  const grid = document.getElementById('options-grid');
+  grid.innerHTML = '';
+  document.getElementById('answer-feedback').className = 'answer-feedback';
+  document.getElementById('not-my-turn').classList.add('hidden');
+  document.getElementById('options-grid').classList.remove('hidden');
+
+  if (!isMyTurn) {
+    // Show question but disable options
+    document.getElementById('not-my-turn').classList.remove('hidden');
+    document.getElementById('options-grid').classList.add('hidden');
+    return;
+  }
+
+  q.options.forEach((opt, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'option-btn';
+    btn.innerHTML = `<div class="option-label">${labels[i]}</div>${opt}`;
+    btn.onclick = () => answerQuestion(i, q, btn);
+    grid.appendChild(btn);
+  });
+}
+
+function answerQuestion(idx, q, btn) {
+  const allBtns = document.querySelectorAll('.option-btn');
+  allBtns.forEach(b => b.disabled = true);
+
+  socket.emit('answer-question', { matchId: currentMatch.id, answerIndex: idx });
+}
+
+socket.on('answer-result', ({ correct, canMove: cm }) => {
+  const fb = document.getElementById('answer-feedback');
+  const allBtns = document.querySelectorAll('.option-btn');
+
+  if (correct) {
+    fb.textContent = '✅ إجابة صحيحة! اختر خانة على اللوح';
+    fb.className = 'answer-feedback correct';
+    canMove = true;
+    if (currentMatch) setEmptyCellsClickable();
+    document.getElementById('board-title').innerHTML = '<span class="can-play">✅ اختر خانة!</span>';
+    playCorrect();
+  } else {
+    fb.textContent = '❌ إجابة خاطئة! انتظر دورك التالي';
+    fb.className = 'answer-feedback wrong';
+    playWrong();
+    // Optionally show correct answer after 1s
+  }
+
+  clearTimeout(feedbackTimeout);
+  feedbackTimeout = setTimeout(() => { fb.className = 'answer-feedback'; }, 4000);
+});
+
+socket.on('move-error', (msg) => {
+  const fb = document.getElementById('answer-feedback');
+  fb.textContent = '⚠️ ' + msg;
+  fb.className = 'answer-feedback wrong';
+  setTimeout(() => { fb.className = 'answer-feedback'; }, 3000);
+});
+
+// ─── Match ended ──────────────────────────────────────────────────────────────
+socket.on('match-ended', ({ winner, line }) => {
+  if (line) highlightWinLine(line);
+});
+
+socket.on('match-result', ({ winner, isWinner }) => {
+  setTimeout(() => {
+    showScreen('result-screen');
+    document.getElementById('match-screen').classList.remove('active');
+
+    if (isWinner) {
+      document.getElementById('result-emoji').textContent = '🏆';
+      document.getElementById('result-title').textContent = 'فزت!';
+      document.getElementById('result-title').className = 'result-title win';
+      document.getElementById('result-subtitle').textContent = 'أحسنت! تأهلت للجولة القادمة.';
+      playWin();
+    } else {
+      document.getElementById('result-emoji').textContent = '💔';
+      document.getElementById('result-title').textContent = 'خسرت';
+      document.getElementById('result-title').className = 'result-title lose';
+      document.getElementById('result-subtitle').textContent = 'لا تستسلم — حاول مرة أخرى!';
+      playLose();
+    }
+  }, 2000);
+});
+
+function highlightWinLine(line) {
+  if (!line) return;
+  line.forEach(i => {
+    const cell = document.getElementById('cell-' + i);
+    if (cell) cell.classList.add('win-cell');
+  });
+}
+
+// ─── Events mini feed ─────────────────────────────────────────────────────────
+socket.on('event-feed-update', (ev) => {
+  const feed = document.getElementById('mini-feed');
+  const item = document.createElement('div');
+  item.className = 'mini-event ' + (ev.type || 'info');
+  item.textContent = ev.text;
+  feed.insertBefore(item, feed.firstChild);
+  while (feed.children.length > 20) feed.removeChild(feed.lastChild);
+});
+
+// ─── Utilities ────────────────────────────────────────────────────────────────
+function showScreen(id) {
+  ['join-screen','waiting-screen','result-screen'].forEach(s => {
+    const el = document.getElementById(s);
+    if (el) el.classList.toggle('hidden', s !== id);
+  });
+  const matchScreen = document.getElementById('match-screen');
+  if (matchScreen) matchScreen.classList.toggle('active', id === 'match-screen');
+}
+
+function goWaiting() {
+  showScreen('waiting-screen');
+  // Reset match state
+  currentMatch = null;
+  canMove = false;
+  document.getElementById('xo-board').innerHTML = '';
+}
+
+socket.on('tournament-finished', ({ winner }) => {
+  const isWinner = winner?.id === myId;
+  document.getElementById('result-emoji').textContent = isWinner ? '🥇' : '🎖️';
+  document.getElementById('result-title').textContent = isWinner ? 'بطل البطولة!' : 'انتهت البطولة';
+  document.getElementById('result-title').className = 'result-title ' + (isWinner ? 'win' : 'lose');
+  document.getElementById('result-subtitle').textContent = isWinner
+    ? `${winner.name} هو بطل بطولة XO العربية! 🏆`
+    : `الفائز: ${winner?.name || '-'}`;
+  showScreen('result-screen');
+  if (isWinner) playWin();
+});
+</script>
+
+</body>
+</html>
